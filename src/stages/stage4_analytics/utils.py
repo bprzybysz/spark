@@ -90,6 +90,12 @@ def calculate_group_metrics(df: DataFrame,
     Returns:
         DataFrame with aggregated metrics
     """
+    # Validate columns exist
+    all_cols = set(df.columns)
+    missing_cols = set(group_cols + agg_cols) - all_cols
+    if missing_cols:
+        raise ValueError(f"Columns not found in DataFrame: {missing_cols}")
+    
     agg_exprs = []
     for col in agg_cols:
         for func in agg_funcs:
@@ -106,7 +112,7 @@ def calculate_group_metrics(df: DataFrame,
             elif func == 'stddev':
                 agg_exprs.append(F.stddev(col).alias(f'{col}_{func}'))
     
-    return df.groupBy(group_cols).agg(*agg_exprs)
+    return df.groupBy(group_cols).agg(*agg_exprs) if not df.rdd.isEmpty() else df.select()
 
 def calculate_time_series_metrics(df: DataFrame,
                                 time_col: str,
@@ -201,4 +207,161 @@ def validate_numeric_columns(df: DataFrame, columns: List[str]) -> bool:
             return False
         if not isinstance(df.schema[column].dataType, NumericType):
             return False
-    return True 
+    return True
+
+def calculate_moving_average(df: DataFrame,
+                           column: str,
+                           window_size: int) -> DataFrame:
+    """
+    Calculate moving average for a numeric column.
+    
+    Args:
+        df: Input DataFrame
+        column: Column to analyze
+        window_size: Size of the moving average window
+        
+    Returns:
+        DataFrame with moving average column
+    """
+    if window_size <= 0:
+        raise ValueError("Window size must be positive")
+        
+    window_spec = Window.orderBy(F.monotonically_increasing_id()).rowsBetween(-window_size + 1, 0)
+    return df.withColumn(f'{column}_ma', F.avg(column).over(window_spec))
+
+def detect_seasonality(df: DataFrame,
+                      time_col: str,
+                      value_col: str,
+                      period: int) -> Dict[str, float]:
+    """
+    Detect seasonality in time series data.
+    
+    Args:
+        df: Input DataFrame
+        time_col: Column containing timestamps
+        value_col: Column containing values to analyze
+        period: Expected seasonality period
+        
+    Returns:
+        Dictionary containing seasonality metrics
+    """
+    if df.rdd.isEmpty():
+        return {
+            'period': period,
+            'seasonality_score': 0.0,
+            'is_seasonal': False
+        }
+    
+    # Calculate autocorrelation at the specified period
+    lagged_df = df.withColumn(
+        'lagged_value',
+        F.lag(F.col(value_col), period).over(Window.orderBy(time_col))
+    )
+    
+    corr = lagged_df.select(
+        F.corr(value_col, 'lagged_value').alias('autocorrelation')
+    ).collect()[0]['autocorrelation']
+    
+    seasonality_score = abs(corr) if corr is not None else 0.0
+    
+    return {
+        'period': period,
+        'seasonality_score': seasonality_score,
+        'is_seasonal': seasonality_score > 0.7
+    }
+
+def identify_trends(df: DataFrame,
+                   value_col: str,
+                   time_col: str,
+                   window_size: int = 7) -> DataFrame:
+    """
+    Identify trends in time series data.
+    
+    Args:
+        df: Input DataFrame
+        value_col: Column containing values to analyze
+        time_col: Column containing timestamps
+        window_size: Window size for trend calculation
+        
+    Returns:
+        DataFrame with trend indicators
+    """
+    window_spec = Window.orderBy(time_col).rowsBetween(-window_size + 1, 0)
+    
+    return df.withColumn(
+        'trend_direction',
+        F.when(
+            F.col(value_col) > F.lag(value_col, 1).over(Window.orderBy(time_col)),
+            'increasing'
+        ).when(
+            F.col(value_col) < F.lag(value_col, 1).over(Window.orderBy(time_col)),
+            'decreasing'
+        ).otherwise('stable')
+    ).withColumn(
+        'slope',
+        (F.col(value_col) - F.lag(value_col, window_size).over(Window.orderBy(time_col))) / window_size
+    )
+
+def analyze_distribution(df: DataFrame,
+                        column: str,
+                        bins: int = 10) -> Dict[str, float]:
+    """
+    Analyze the distribution of a numeric column.
+    
+    Args:
+        df: Input DataFrame
+        column: Column to analyze
+        bins: Number of bins for histogram
+        
+    Returns:
+        Dictionary containing distribution metrics
+    """
+    if df.rdd.isEmpty():
+        return {
+            'mean': None,
+            'median': None,
+            'stddev': None,
+            'skewness': None,
+            'kurtosis': None
+        }
+    
+    stats = df.select(
+        F.mean(column).alias('mean'),
+        F.expr(f'percentile_approx({column}, 0.5)').alias('median'),
+        F.stddev(column).alias('stddev'),
+        F.skewness(column).alias('skewness'),
+        F.kurtosis(column).alias('kurtosis')
+    ).collect()[0]
+    
+    return {
+        'mean': float(stats['mean']) if stats['mean'] is not None else None,
+        'median': float(stats['median']) if stats['median'] is not None else None,
+        'stddev': float(stats['stddev']) if stats['stddev'] is not None else None,
+        'skewness': float(stats['skewness']) if stats['skewness'] is not None else None,
+        'kurtosis': float(stats['kurtosis']) if stats['kurtosis'] is not None else None
+    }
+
+def calculate_percentiles(df: DataFrame,
+                         column: str,
+                         percentiles: List[float]) -> Dict[float, float]:
+    """
+    Calculate percentiles for a numeric column.
+    
+    Args:
+        df: Input DataFrame
+        column: Column to analyze
+        percentiles: List of percentiles to calculate (between 0 and 100)
+        
+    Returns:
+        Dictionary mapping percentiles to their values
+    """
+    if not all(0 <= p <= 100 for p in percentiles):
+        raise ValueError("Percentiles must be between 0 and 100")
+    
+    # Convert percentiles to fractions
+    fractions = [p/100.0 for p in percentiles]
+    expr = [F.expr(f'percentile_approx({column}, {f})').alias(f'p{int(f*100)}') 
+            for f in fractions]
+    
+    result = df.select(*expr).collect()[0]
+    return {p: float(result[f'p{int((p/100)*100)}']) for p in percentiles} 

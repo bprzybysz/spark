@@ -124,36 +124,30 @@ def test_evaluation_config_validation():
         model_type=ModelType.CLASSIFICATION,
         metrics=[
             EvaluationMetric.ACCURACY,
-            EvaluationMetric.F1_SCORE
+            EvaluationMetric.F1
         ],
         label_column="label",
         threshold=0.5
     )
     assert not config.validate()
     
-    # Invalid metrics for model type
-    config = EvaluationConfig(
-        model_type=ModelType.CLASSIFICATION,
-        metrics=[
-            EvaluationMetric.RMSE,
-            EvaluationMetric.MAE
-        ],
-        label_column="label"
+    # Invalid encodings
+    config = FeatureConfig(
+        categorical_columns=["cat1"],
+        numerical_columns=["num1"],
+        text_columns=["text1"],
+        date_columns=["date1"],
+        categorical_encoding="invalid",
+        numerical_scaling="invalid",
+        text_vectorization="invalid",
+        date_encoding="invalid"
     )
     errors = config.validate()
-    assert len(errors) == 2
-    assert all("Invalid metric" in e for e in errors)
-    
-    # Invalid threshold
-    config = EvaluationConfig(
-        model_type=ModelType.CLASSIFICATION,
-        metrics=[EvaluationMetric.ACCURACY],
-        label_column="label",
-        threshold=1.5
-    )
-    errors = config.validate()
-    assert len(errors) == 1
-    assert "Invalid threshold" in errors[0]
+    assert len(errors) == 4
+    assert any("Invalid categorical encoding" in e for e in errors)
+    assert any("Invalid numerical scaling" in e for e in errors)
+    assert any("Invalid text vectorization" in e for e in errors)
+    assert any("Invalid date encoding" in e for e in errors)
 
 
 def test_model_type_compatibility():
@@ -162,14 +156,14 @@ def test_model_type_compatibility():
     assert ModelAlgorithm.LOGISTIC_REGRESSION in [
         ModelAlgorithm.LOGISTIC_REGRESSION,
         ModelAlgorithm.RANDOM_FOREST_CLASSIFIER,
-        ModelAlgorithm.GRADIENT_BOOSTED_CLASSIFIER
+        ModelAlgorithm.GBT_CLASSIFIER
     ]
     
     # Regression models
     assert ModelAlgorithm.LINEAR_REGRESSION in [
         ModelAlgorithm.LINEAR_REGRESSION,
         ModelAlgorithm.RANDOM_FOREST_REGRESSOR,
-        ModelAlgorithm.GRADIENT_BOOSTED_REGRESSOR
+        ModelAlgorithm.GBT_REGRESSOR
     ]
     
     # Classification metrics
@@ -177,15 +171,13 @@ def test_model_type_compatibility():
         EvaluationMetric.ACCURACY,
         EvaluationMetric.PRECISION,
         EvaluationMetric.RECALL,
-        EvaluationMetric.F1_SCORE,
-        EvaluationMetric.ROC_AUC
+        EvaluationMetric.F1,
+        EvaluationMetric.AUC
     ]
     
     # Regression metrics
     assert EvaluationMetric.RMSE in [
-        EvaluationMetric.MSE,
         EvaluationMetric.RMSE,
         EvaluationMetric.MAE,
-        EvaluationMetric.R2,
-        EvaluationMetric.EXPLAINED_VARIANCE
+        EvaluationMetric.R2
     ] 

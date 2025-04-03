@@ -9,102 +9,103 @@ from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 from pyspark.sql.types import *
 
-def calculate_column_statistics(df: DataFrame, column: str) -> Dict[str, float]:
-    """
-    Calculate basic statistics for a column.
-    
-    Args:
-        df: Input DataFrame
-        column: Column name to analyze
-        
-    Returns:
-        Dictionary containing basic statistics
-    """
-    stats = df.select(
-        F.count(column).alias('count'),
-        F.countDistinct(column).alias('distinct'),
-        F.mean(column).alias('mean'),
-        F.stddev(column).alias('stddev'),
-        F.min(column).alias('min'),
-        F.max(column).alias('max')
-    ).collect()[0]
-    
+def calculate_column_statistics(df: DataFrame, column_name: str) -> Dict[str, Optional[float]]:
+    """Calculate basic statistics for a numeric column."""
+    df.createOrReplaceTempView("data_table")
+    stats = df.sparkSession.sql(f"""
+        SELECT 
+            COUNT(*) as count,
+            COUNT(CASE WHEN {column_name} IS NULL THEN 1 END) as null_count,
+            AVG({column_name}) as mean,
+            STDDEV({column_name}) as stddev,
+            MIN({column_name}) as min,
+            MAX({column_name}) as max
+        FROM data_table
+    """).collect()[0]
+
     return {
-        'count': stats['count'],
-        'distinct_count': stats['distinct'],
-        'mean': stats['mean'],
-        'stddev': stats['stddev'],
-        'min': stats['min'],
-        'max': stats['max']
+        "count": stats["count"],
+        "null_count": stats["null_count"],
+        "mean": float(stats["mean"]) if stats["mean"] is not None else None,
+        "stddev": float(stats["stddev"]) if stats["stddev"] is not None else None,
+        "min": float(stats["min"]) if stats["min"] is not None else None,
+        "max": float(stats["max"]) if stats["max"] is not None else None
     }
 
-def detect_data_patterns(df: DataFrame, column: str) -> Dict[str, Union[str, float]]:
-    """
-    Detect common patterns in column data.
-    
-    Args:
-        df: Input DataFrame
-        column: Column name to analyze
-        
-    Returns:
-        Dictionary containing pattern information
-    """
-    patterns = {}
-    
+def detect_data_patterns(df: DataFrame, column_name: str) -> Dict[str, Union[float, int]]:
+    """Detect patterns in the data for a given column."""
+    total_count = df.count()
+    null_count = df.filter(F.col(column_name).isNull()).count()
+    null_percentage = (null_count / total_count) * 100 if total_count > 0 else 0
+
+    # Count unique non-null values
+    unique_count = df.filter(F.col(column_name).isNotNull()).select(column_name).distinct().count()
+
+    patterns = {
+        "null_percentage": null_percentage,
+        "unique_values": unique_count
+    }
+
     # Get column type
-    col_type = df.schema[column].dataType
-    
+    col_type = df.schema[column_name].dataType
+
     if isinstance(col_type, StringType):
         # String pattern analysis
-        patterns['avg_length'] = df.select(F.avg(F.length(F.col(column)))).collect()[0][0]
-        patterns['max_length'] = df.select(F.max(F.length(F.col(column)))).collect()[0][0]
-        patterns['contains_numbers'] = df.filter(F.col(column).rlike('\\d')).count() > 0
-        patterns['contains_special'] = df.filter(F.col(column).rlike('[^a-zA-Z0-9\\s]')).count() > 0
+        avg_length = df.select(
+            F.avg(F.length(F.col(column_name)))
+        ).collect()[0][0]
+        patterns["avg_length"] = float(avg_length) if avg_length is not None else 0.0
     elif isinstance(col_type, (IntegerType, LongType, FloatType, DoubleType)):
         # Numeric pattern analysis
-        patterns['is_continuous'] = df.select(F.countDistinct(column)).collect()[0][0] > 10
-        patterns['has_negatives'] = df.filter(F.col(column) < 0).count() > 0
-        patterns['has_decimals'] = isinstance(col_type, (FloatType, DoubleType))
-    
+        negative_count = df.filter(
+            (F.col(column_name).isNotNull()) & (F.col(column_name) < 0)
+        ).count()
+        patterns["negative_values"] = negative_count
+
     return patterns
 
-def check_value_distribution(df: DataFrame, column: str, num_bins: int = 10) -> Dict[str, float]:
-    """
-    Analyze value distribution in a column.
+def check_value_distribution(df: DataFrame, column_name: str) -> Dict[str, List]:
+    """Analyze the distribution of values in a numeric column."""
+    non_null_df = df.filter(F.col(column_name).isNotNull())
     
-    Args:
-        df: Input DataFrame
-        column: Column name to analyze
-        num_bins: Number of bins for histogram (for numeric data)
-        
-    Returns:
-        Dictionary containing distribution metrics
-    """
-    distribution = {}
-    
-    # Calculate frequency distribution
-    value_counts = df.filter(F.col(column).isNotNull()).groupBy(column).count().orderBy('count', ascending=False)
-    
-    # Get top values
-    top_values = value_counts.limit(5).collect()
-    distribution['top_values'] = [(row[column], row['count']) for row in top_values]
-    
-    # Calculate distribution metrics
-    total_count = df.count()
-    non_null_count = df.filter(F.col(column).isNotNull()).count()
-    
-    distribution['null_ratio'] = (total_count - non_null_count) / total_count if total_count > 0 else 0
-    distribution['unique_ratio'] = df.select(F.countDistinct(column)).collect()[0][0] / total_count if total_count > 0 else 0
-    
-    # If all values are null, clear top_values
-    if non_null_count == 0:
-        distribution['top_values'] = []
-    
-    return distribution
+    if non_null_df.count() == 0:
+        return {
+            "percentiles": [],
+            "histogram": []
+        }
+
+    # Calculate min and max for bin calculation
+    stats = non_null_df.agg(
+        F.min(column_name).alias("min"),
+        F.max(column_name).alias("max")
+    ).collect()[0]
+
+    min_val = float(stats["min"])
+    max_val = float(stats["max"])
+    bin_width = (max_val - min_val) / 10 if max_val > min_val else 1.0
+
+    # Calculate histogram using window function
+    histogram = non_null_df.groupBy(
+        F.floor((F.col(column_name).cast("double") - min_val) / bin_width).alias("bin")
+    ).agg(
+        F.count("*").alias("count")
+    ).collect()
+
+    histogram_data = [(float(row["bin"] * bin_width + min_val), int(row["count"])) for row in histogram]
+
+    # Calculate percentiles
+    percentiles = non_null_df.select(
+        F.percentile_approx(column_name, [0.25, 0.5, 0.75]).alias("percentiles")
+    ).collect()[0]["percentiles"]
+
+    return {
+        "percentiles": percentiles,
+        "histogram": histogram_data
+    }
 
 def validate_value_ranges(df: DataFrame, column: str, 
                         min_value: Optional[float] = None,
-                        max_value: Optional[float] = None) -> Dict[str, Union[bool, int]]:
+                        max_value: Optional[float] = None) -> Dict[str, int]:
     """
     Validate if values in a column fall within specified ranges.
     
@@ -117,49 +118,46 @@ def validate_value_ranges(df: DataFrame, column: str,
     Returns:
         Dictionary containing validation results
     """
-    validation = {'is_valid': True, 'violations': 0}
+    null_count = df.filter(F.col(column).isNull()).count()
+    below_min = df.filter(F.col(column) < min_value).count() if min_value is not None else 0
+    above_max = df.filter(F.col(column) > max_value).count() if max_value is not None else 0
+    within_range = df.filter(
+        (F.col(column).isNotNull()) &
+        (F.col(column) >= min_value if min_value is not None else F.lit(True)) &
+        (F.col(column) <= max_value if max_value is not None else F.lit(True))
+    ).count()
     
-    if min_value is not None:
-        violations = df.filter(F.col(column) < min_value).count()
-        validation['violations'] += violations
-        validation['is_valid'] &= violations == 0
-        
-    if max_value is not None:
-        violations = df.filter(F.col(column) > max_value).count()
-        validation['violations'] += violations
-        validation['is_valid'] &= violations == 0
-        
-    return validation
+    return {
+        'below_min': below_min,
+        'above_max': above_max,
+        'within_range': within_range,
+        'null_values': null_count
+    }
 
 def check_referential_integrity(df1: DataFrame, df2: DataFrame,
-                              key1: str, key2: str) -> Dict[str, Union[bool, int]]:
+                              key: str) -> Dict[str, int]:
     """
     Check referential integrity between two DataFrames.
     
     Args:
         df1: First DataFrame
         df2: Second DataFrame
-        key1: Key column in first DataFrame
-        key2: Key column in second DataFrame
+        key: Key column in both DataFrames
         
     Returns:
         Dictionary containing integrity check results
     """
-    integrity = {}
-    
     # Get distinct keys from both DataFrames
-    keys1 = set(row[0] for row in df1.select(key1).distinct().collect())
-    keys2 = set(row[0] for row in df2.select(key2).distinct().collect())
+    keys1 = set(row[0] for row in df1.select(key).distinct().collect())
+    keys2 = set(row[0] for row in df2.select(key).distinct().collect())
     
-    # Check for orphaned records
-    orphaned_keys = keys1 - keys2
-    integrity['orphaned_records'] = len(orphaned_keys)
+    # Calculate metrics
+    matching_keys = len(keys1.intersection(keys2))
+    missing_in_first = len(keys2 - keys1)
+    missing_in_second = len(keys1 - keys2)
     
-    # Check for missing references
-    missing_keys = keys2 - keys1
-    integrity['missing_references'] = len(missing_keys)
-    
-    # Overall integrity status
-    integrity['is_valid'] = len(orphaned_keys) == 0 and len(missing_keys) == 0
-    
-    return integrity 
+    return {
+        'matching_keys': matching_keys,
+        'missing_in_first': missing_in_first,
+        'missing_in_second': missing_in_second
+    } 

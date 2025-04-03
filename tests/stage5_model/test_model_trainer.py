@@ -1,5 +1,7 @@
 """Tests for Stage 5 model trainer."""
 
+import os
+import sys
 import pytest
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType, DoubleType
@@ -15,6 +17,10 @@ from src.stages.stage5_model.config import (
 from src.stages.stage5_model.training.model_trainer import (
     ModelTrainer
 )
+
+# Set Python environment variables for consistent Python versions
+os.environ["PYSPARK_PYTHON"] = sys.executable
+os.environ["PYSPARK_DRIVER_PYTHON"] = sys.executable
 
 
 @pytest.fixture(scope="module")
