@@ -1,14 +1,27 @@
 version: "1.0"
 last_updated: "2024-04-03"
 
+stages:
+  stage1-schema-detection:
+    status: in_progress
+    description: "Automatic schema detection for data sources"
+    start_date: "2024-04-03"
+    completion: 80
+    tests_status: "implementing"
+    next_steps:
+      - "Complete test implementation"
+      - "Add integration tests with Hive"
+      - "Add Parquet file support tests"
+
 components:
   data_pipeline:
     status: in_progress
     completed:
       - hive_integration
       - spark_session_factory
-    pending:
+    in_progress:
       - schema_detection
+    pending:
       - streaming_pipeline
     blockers: []
 
@@ -43,16 +56,17 @@ components:
       - "Need cloud provider decision"
 
 next_steps:
+  - task: "Complete schema detection tests"
+    priority: high
+    assignee: TBD
+    deadline: "2024-04-05"
+    details: "Implement remaining tests for Parquet and Hive support"
+  
   - task: "Implement secrets management"
     priority: high
     assignee: TBD
     deadline: "2024-04-10"
   
-  - task: "Complete schema detection"
-    priority: medium
-    assignee: TBD
-    deadline: "2024-04-15"
-
   - task: "Set up monitoring"
     priority: medium
     assignee: TBD

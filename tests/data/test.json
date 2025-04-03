@@ -1,0 +1,3 @@
+{"id": 1, "name": "Alice", "tags": ["a", "b"]}
+{"id": 2, "name": "Bob", "tags": ["c"]}
+{"id": 3, "name": null, "tags": []}
