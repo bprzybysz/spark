@@ -10,20 +10,37 @@
       "import_style": {
         "style": "isort",
         "multi_line": 3,
-        "combine_as_imports": true
+        "combine_as_imports": true,
+        "sections": [
+          "FUTURE",
+          "STDLIB",
+          "THIRDPARTY",
+          "FIRSTPARTY",
+          "LOCALFOLDER"
+        ],
+        "group_by_package": true
       },
       "type_hints": {
         "required": true,
         "return_type": true,
         "function_args": true,
-        "variables": false
+        "variables": true,
+        "ignore_missing": ["pyspark"]
       },
       "naming": {
         "class": "PascalCase",
         "function": "snake_case",
         "variable": "snake_case",
         "constant": "UPPER_CASE",
-        "parameter": "snake_case"
+        "parameter": "snake_case",
+        "fixture": "snake_case"
+      },
+      "pyspark": {
+        "builder_style": "multiline",
+        "dataframe_operations": {
+          "max_chain_length": 4,
+          "prefer_method_chaining": true
+        }
       }
     },
     "yaml": {
@@ -50,7 +67,8 @@
       "required": true,
       "sections": [
         "Attributes",
-        "Methods"
+        "Methods",
+        "Examples"
       ]
     },
     "function_docstring": {
@@ -59,17 +77,36 @@
         "Args",
         "Returns",
         "Raises"
-      ]
+      ],
+      "test_docstring": {
+        "required": true,
+        "format": "Arrange-Act-Assert",
+        "sections": [
+          "Test scenario",
+          "Expected behavior"
+        ]
+      }
     }
   },
   "testing": {
     "naming": {
       "test_files": "test_*.py",
-      "test_functions": "test_*"
+      "test_functions": "test_*",
+      "fixture_functions": "*_fixture"
     },
     "structure": {
       "arrange_act_assert": true,
-      "require_docstring": false
+      "require_docstring": true,
+      "max_test_size": 50,
+      "fixtures": {
+        "scope_required": true,
+        "require_docstring": true
+      }
+    },
+    "assertions": {
+      "prefer_positive": true,
+      "require_messages": true,
+      "boolean_style": "direct"
     }
   },
   "linting": {
@@ -77,21 +114,35 @@
     "tools": {
       "flake8": {
         "max_line_length": 100,
-        "ignore": ["E203", "W503"],
+        "ignore": {
+          "E203": "whitespace_before_colon",
+          "W503": "line_break_before_binary_operator",
+          "E231": "missing_whitespace_after_comma"
+        },
         "exclude": [
           ".git",
           "__pycache__",
           "build",
-          "dist"
-        ]
+          "dist",
+          "*.egg-info"
+        ],
+        "per_file_ignores": {
+          "test_*.py": ["D103"]
+        }
       },
       "mypy": {
         "strict": true,
         "ignore_missing_imports": true,
-        "disallow_untyped_defs": true
+        "disallow_untyped_defs": true,
+        "plugins": ["pyspark.mypy"]
       },
       "pylint": {
-        "enabled": false
+        "enabled": true,
+        "disable": {
+          "C0111": "missing_docstring",
+          "R0903": "too_few_public_methods"
+        },
+        "max-line-length": 100
       }
     }
   },
@@ -105,11 +156,19 @@
         "style",
         "refactor",
         "test",
-        "chore"
+        "chore",
+        "perf"
       ],
       "max_length": {
         "title": 72,
         "body": 100
+      },
+      "scope_required": true
+    },
+    "branch": {
+      "naming": {
+        "pattern": "^(feature|bugfix|hotfix|release)/[a-z0-9-]+$",
+        "max_length": 50
       }
     }
   },
@@ -118,6 +177,12 @@
     "insert_final_newline": true,
     "rulers": [100],
     "word_wrap": false,
-    "auto_closing_pairs": true
+    "auto_closing_pairs": true,
+    "ensure_newline_at_eof": true,
+    "trim_trailing_spaces": true,
+    "pyspark": {
+      "format_string_literals": true,
+      "align_multiline_comments": true
+    }
   }
 } 
