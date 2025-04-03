@@ -1,6 +1,3 @@
-"""Utility package containing reusable components for the Spark project.
-
-This package provides common functionality used across different stages of the pipeline.
-"""
+"""Utility package for common functionality."""
 
 __version__ = "0.1.0" 

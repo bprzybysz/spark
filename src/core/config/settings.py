@@ -4,12 +4,15 @@ Application settings module.
 This module defines the application settings using Pydantic for validation
 and environment variable loading.
 """
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Literal, Union
 import os
 from pathlib import Path
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic.fields import FieldInfo
+
+from .m1_optimized_settings import M1SparkSettings, M1MLSettings
 
 
 class SparkSettings(BaseModel):
@@ -110,30 +113,31 @@ class Settings(BaseSettings):
     version: str = Field(default="0.1.0")
     debug: bool = Field(default=False)
     testing: bool = Field(default=False)
+    profile: Literal["default", "dev"] = Field(default="default")
     
     # Component settings
-    spark: SparkSettings = Field(default_factory=SparkSettings)
+    spark: Union[SparkSettings, M1SparkSettings] = Field(default_factory=SparkSettings)
     hive: HiveSettings = Field(default_factory=HiveSettings)
     kafka: KafkaSettings = Field(default_factory=KafkaSettings)
     api: ApiSettings = Field(default_factory=ApiSettings)
-    ml: MLSettings = Field(default_factory=MLSettings)
+    ml: Union[MLSettings, M1MLSettings] = Field(default_factory=MLSettings)
     log: LogSettings = Field(default_factory=LogSettings)
     security: SecuritySettings = Field(default_factory=SecuritySettings)
     
-    @validator("spark", pre=True)
-    def validate_spark(cls, v: Any) -> SparkSettings:
-        """Validate and create SparkSettings from environment variables."""
+    @field_validator("spark", "ml", mode="before")
+    @classmethod
+    def set_profile_settings(cls, v: Any, info: FieldInfo) -> Any:
+        """Set profile-specific settings."""
+        values = info.data
+        field_name = info.field_name
+        
+        if values.get("profile") == "dev":
+            if isinstance(v, dict):
+                return M1SparkSettings(**v) if field_name == "spark" else M1MLSettings(**v)
+            return M1SparkSettings() if field_name == "spark" else M1MLSettings()
         if isinstance(v, dict):
-            return v
-        return SparkSettings(
-            master=os.getenv("SPARK_MASTER", "local[*]"),
-            app_name=os.getenv("SPARK_APP_NAME", "SparkETLMLPipeline"),
-            executor_memory=os.getenv("SPARK_EXECUTOR_MEMORY", "4g"),
-            driver_memory=os.getenv("SPARK_DRIVER_MEMORY", "2g"),
-            executor_cores=int(os.getenv("SPARK_EXECUTOR_CORES", "4")),
-            local_dir=os.getenv("SPARK_LOCAL_DIR", "/tmp/spark-local"),
-            warehouse_dir=os.getenv("SPARK_WAREHOUSE_DIR", "/tmp/spark-warehouse"),
-        )
+            return SparkSettings(**v) if field_name == "spark" else MLSettings(**v)
+        return v
     
     def get_log_file_path(self) -> Path:
         """Get the absolute path to the log file."""
