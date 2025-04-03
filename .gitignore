@@ -1,0 +1,80 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Virtual Environment
+venv/
+ENV/
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Spark
+metastore_db/
+spark-warehouse/
+derby.log
+
+# Hive
+*.log
+logs/
+tmp/
+
+# Data files
+*.csv
+*.parquet
+*.avro
+*.pkl
+*.joblib
+*.model
+*.pb
+
+# ML Models
+saved_models/
+model_checkpoints/
+models/*.h5
+models/*.pb
+models/saved_model/
+
+# Docker
+.docker/
+
+# Node (for docs if using mkdocs or similar)
+node_modules/
+
+# Local config files
+config/local.conf
+config/*.local.*
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Temp files
+*.tmp 

@@ -1,0 +1,102 @@
+{
+  "name": "spark-etl-ml-pipeline",
+  "version": "0.1.0",
+  "description": "Integrated data engineering and ML pipeline with Hive, Spark, and TensorFlow",
+  "modules": {
+    "data": {
+      "description": "Data acquisition, processing, and storage components",
+      "components": {
+        "hive": {
+          "description": "Hive integration for data warehousing",
+          "path": "src/data/hive"
+        },
+        "spark_streams": {
+          "description": "Spark Streaming components for real-time data processing",
+          "path": "src/data/streams"
+        },
+        "etl": {
+          "description": "Batch ETL processing with Spark",
+          "path": "src/data/etl"
+        },
+        "schema": {
+          "description": "Schema detection and management",
+          "path": "src/data/schema"
+        }
+      }
+    },
+    "ml": {
+      "description": "Machine learning components",
+      "components": {
+        "training": {
+          "description": "ML model training with TensorFlow and PySpark",
+          "path": "src/ml/training",
+          "artifacts": "notebooks/"
+        },
+        "inference": {
+          "description": "Model inference and serving components",
+          "path": "src/ml/inference"
+        },
+        "models": {
+          "description": "Model definitions and registry",
+          "path": "src/ml/models"
+        }
+      }
+    },
+    "api": {
+      "description": "API components",
+      "components": {
+        "fastapi": {
+          "description": "FastAPI application for model serving",
+          "path": "src/api/fastapi"
+        },
+        "mcp": {
+          "description": "Message Communication Protocol servers",
+          "path": "src/api/mcp"
+        }
+      }
+    },
+    "core": {
+      "description": "Core application components",
+      "components": {
+        "config": {
+          "description": "Configuration management",
+          "path": "src/core/config"
+        },
+        "di": {
+          "description": "Dependency injection container",
+          "path": "src/core/di"
+        },
+        "logging": {
+          "description": "Logging infrastructure",
+          "path": "src/core/logging"
+        }
+      }
+    },
+    "common": {
+      "description": "Common utilities and shared code",
+      "path": "src/common"
+    }
+  },
+  "workflows": {
+    "etl": {
+      "description": "ETL data processing workflow",
+      "components": ["data.hive", "data.etl"],
+      "path": "workflow/etl"
+    },
+    "streaming": {
+      "description": "Streaming data processing workflow",
+      "components": ["data.spark_streams", "data.schema"],
+      "path": "workflow/streaming"
+    },
+    "training": {
+      "description": "Model training workflow",
+      "components": ["data.etl", "ml.training"],
+      "path": "workflow/training"
+    },
+    "inference": {
+      "description": "Model inference workflow",
+      "components": ["ml.models", "ml.inference", "api.fastapi"],
+      "path": "workflow/inference"
+    }
+  }
+} 

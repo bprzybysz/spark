@@ -1,0 +1,59 @@
+version: "1.0"
+last_updated: "2024-04-03"
+
+components:
+  data_pipeline:
+    status: in_progress
+    completed:
+      - hive_integration
+      - spark_session_factory
+    pending:
+      - schema_detection
+      - streaming_pipeline
+    blockers: []
+
+  ml_pipeline:
+    status: in_progress
+    completed:
+      - model_registry
+      - tensorflow_integration
+    pending:
+      - training_pipeline
+      - model_versioning
+    blockers: []
+
+  api:
+    status: in_progress
+    completed:
+      - fastapi_setup
+      - basic_endpoints
+    pending:
+      - mcp_integration
+      - schema_validation
+    blockers: []
+
+  infrastructure:
+    status: pending
+    completed: []
+    pending:
+      - secrets_management
+      - monitoring
+      - deployment
+    blockers:
+      - "Need cloud provider decision"
+
+next_steps:
+  - task: "Implement secrets management"
+    priority: high
+    assignee: TBD
+    deadline: "2024-04-10"
+  
+  - task: "Complete schema detection"
+    priority: medium
+    assignee: TBD
+    deadline: "2024-04-15"
+
+  - task: "Set up monitoring"
+    priority: medium
+    assignee: TBD
+    deadline: "2024-04-20" 

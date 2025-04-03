@@ -1,0 +1,56 @@
+{
+  "version": "2.0",
+  "settings": {
+    "python_version": "3.10",
+    "venv_manager": "poetry",
+    "project_root": ".",
+    "docs_dir": "docs"
+  },
+  "rules": {
+    "code_generation": {
+      "templates_dir": ".cursor/templates",
+      "doc_to_code_mapping": true,
+      "auto_tests": true
+    },
+    "debugging": {
+      "log_level": "DEBUG",
+      "break_on_error": true,
+      "capture_context": true
+    },
+    "documentation": {
+      "sync_with_code": true,
+      "validate_links": true,
+      "require_examples": true
+    }
+  },
+  "workflows": {
+    "dev": {
+      "pre_commit": [
+        "poetry run black {changed_files}",
+        "poetry run isort {changed_files}",
+        "poetry run mypy {changed_files}"
+      ],
+      "post_commit": [
+        "poetry run pytest tests/{related_tests}"
+      ]
+    },
+    "doc": {
+      "on_code_change": [
+        "update_related_docs {changed_files}",
+        "validate_doc_links"
+      ]
+    }
+  },
+  "templates": {
+    "service": {
+      "path": "src/{module}/services/{name}_service.py",
+      "test_path": "tests/{module}/services/test_{name}_service.py",
+      "doc_path": "docs/api/{module}/services/{name}.md"
+    },
+    "model": {
+      "path": "src/ml/models/{name}_model.py",
+      "test_path": "tests/ml/models/test_{name}_model.py",
+      "doc_path": "docs/models/{name}.md"
+    }
+  }
+} 

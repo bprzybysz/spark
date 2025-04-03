@@ -1,0 +1,51 @@
+# Core dependencies
+pyspark==3.3.2
+fastapi==0.95.1
+uvicorn==0.22.0
+pydantic==1.10.7
+tensorflow==2.12.0
+numpy==1.23.5
+pandas==2.0.1
+python-dotenv==1.0.0
+
+# DI/IoC
+dependency-injector==4.41.0
+attrs==23.1.0
+
+# Data processing
+pyarrow==12.0.0
+findspark==2.0.1
+pyhive==0.6.5
+thrift==0.16.0
+thrift-sasl==0.4.3
+
+# Streaming
+confluent-kafka==2.1.1
+fastavro==1.7.3
+
+# API and schema
+pydantic-settings==2.0.2
+openapi-schema-validator==0.4.4
+openapi-spec-validator==0.5.7
+
+# Jupyter
+jupyter==1.0.0
+jupyterlab==4.0.0
+ipykernel==6.23.1
+
+# Testing
+pytest==7.3.1
+pytest-cov==4.1.0
+pytest-mock==3.10.0
+
+# Development
+black==23.3.0
+isort==5.12.0
+mypy==1.3.0
+flake8==6.0.0
+pre-commit==3.3.2
+
+# Documentation
+mkdocs==1.4.3
+mkdocs-material==9.1.8
+mkdocstrings==0.22.0 
