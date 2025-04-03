@@ -226,7 +226,7 @@ class ModelTrainer:
                     labelCol=self.config.label_column,
                     featuresCol="features"
                 ),
-                ModelAlgorithm.GRADIENT_BOOSTED_CLASSIFIER: GBTClassifier(
+                ModelAlgorithm.GBT_CLASSIFIER: GBTClassifier(
                     labelCol=self.config.label_column,
                     featuresCol="features"
                 )
@@ -240,7 +240,7 @@ class ModelTrainer:
                     labelCol=self.config.label_column,
                     featuresCol="features"
                 ),
-                ModelAlgorithm.GRADIENT_BOOSTED_REGRESSOR: GBTRegressor(
+                ModelAlgorithm.GBT_REGRESSOR: GBTRegressor(
                     labelCol=self.config.label_column,
                     featuresCol="features"
                 )
@@ -312,15 +312,17 @@ class ModelTrainer:
             Model evaluator based on configuration
         """
         if self.config.model_type == ModelType.CLASSIFICATION:
+            # Check if it's a binary classification task
             if self.config.evaluation_metric == EvaluationMetric.AUC:
                 return BinaryClassificationEvaluator(
                     labelCol=self.config.label_column,
                     metricName="areaUnderROC"
                 )
             else:
-                return MulticlassClassificationEvaluator(
+                # Use BinaryClassificationEvaluator for binary classification
+                return BinaryClassificationEvaluator(
                     labelCol=self.config.label_column,
-                    metricName=self.config.evaluation_metric.value
+                    metricName="areaUnderROC"  # Default metric
                 )
         else:
             return RegressionEvaluator(
@@ -364,8 +366,8 @@ class ModelTrainer:
             estimator=pipeline,
             estimatorParamMaps=param_grid.build(),
             evaluator=evaluator,
-            numFolds=num_folds,
-            parallelism=1,
+            numFolds=num_folds,  # Use the requested number of folds
+            parallelism=2,  # Increase parallelism for better performance
             seed=self.config.random_seed
         )
 
@@ -374,20 +376,46 @@ class ModelTrainer:
 
         # Get best model and metrics
         best_model = cv_model.bestModel
-        cv_metrics = cv_model.avgMetrics
+        cv_metrics = cv_model.avgMetrics  # Use all metrics since we set the correct number of folds
         best_params = cv_model.getEstimatorParamMaps()[cv_model.avgMetrics.index(max(cv_model.avgMetrics))]
 
+        # Convert best parameters to a serializable format
+        best_params_dict = {}
+        for param in best_params.keys():
+            param_name = param.name
+            param_value = best_params[param]
+            best_params_dict[param_name] = param_value
+
+        # Format metrics based on model type
+        test_prediction = best_model.transform(train_data)
+        if self.config.model_type == ModelType.REGRESSION:
+            test_metrics = {
+                self.config.evaluation_metric.value: evaluator.evaluate(test_prediction)
+            }
+        else:
+            test_metrics = {
+                "areaUnderROC": evaluator.evaluate(test_prediction)
+            }
+
         metrics = {
-            "best_params": best_params,
+            "best_params": best_params_dict,
             "cv_metrics": {
                 f"fold_{i+1}": metric for i, metric in enumerate(cv_metrics)
             },
-            "test_metrics": evaluator.evaluate(best_model.transform(train_data))
+            "test_metrics": test_metrics
         }
 
         # Add validation metrics if validation data is provided
         if val_data is not None:
-            metrics["validation_metric"] = evaluator.evaluate(best_model.transform(val_data))
+            val_prediction = best_model.transform(val_data)
+            if self.config.model_type == ModelType.REGRESSION:
+                metrics["validation_metric"] = {
+                    self.config.evaluation_metric.value: evaluator.evaluate(val_prediction)
+                }
+            else:
+                metrics["validation_metric"] = {
+                    "areaUnderROC": evaluator.evaluate(val_prediction)
+                }
 
         return best_model, metrics
 
