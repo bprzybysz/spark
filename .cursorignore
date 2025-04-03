@@ -1,0 +1,98 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+.env
+
+# Jupyter
+.ipynb_checkpoints
+notebooks/scratch/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Spark/Hive
+metastore_db/
+spark-warehouse/
+derby.log
+*.log
+logs/
+
+# Data and Models
+data/raw/
+data/processed/
+models/saved/
+*.parquet
+*.avro
+*.pkl
+*.h5
+*.pb
+
+# Cursor specific
+.cursor/cache/
+.cursor/tmp/
+.cursor-test-results/
+
+# Build artifacts
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Temporary files
+*.bak
+*.tmp
+*~
+
+# Large files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Secrets
+secrets/
+.secrets/
+*.key
+*.pem
+*.cert
+
+# Documentation build
+docs/_build/
+site/
+
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+.nox/
+
+# Local development
+local_settings.py
+docker-compose.override.yml 

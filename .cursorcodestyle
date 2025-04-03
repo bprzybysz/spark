@@ -1,0 +1,123 @@
+{
+  "version": "1.0",
+  "language": {
+    "python": {
+      "formatter": "black",
+      "line_length": 100,
+      "indent_size": 4,
+      "quote_style": "double",
+      "docstring_style": "google",
+      "import_style": {
+        "style": "isort",
+        "multi_line": 3,
+        "combine_as_imports": true
+      },
+      "type_hints": {
+        "required": true,
+        "return_type": true,
+        "function_args": true,
+        "variables": false
+      },
+      "naming": {
+        "class": "PascalCase",
+        "function": "snake_case",
+        "variable": "snake_case",
+        "constant": "UPPER_CASE",
+        "parameter": "snake_case"
+      }
+    },
+    "yaml": {
+      "indent_size": 2,
+      "quote_style": "single",
+      "array_indent": 2
+    },
+    "markdown": {
+      "line_length": 100,
+      "code_blocks": {
+        "syntax_highlight": true,
+        "line_numbers": true
+      }
+    }
+  },
+  "documentation": {
+    "required_sections": [
+      "Args",
+      "Returns",
+      "Raises",
+      "Examples"
+    ],
+    "class_docstring": {
+      "required": true,
+      "sections": [
+        "Attributes",
+        "Methods"
+      ]
+    },
+    "function_docstring": {
+      "required": true,
+      "sections": [
+        "Args",
+        "Returns",
+        "Raises"
+      ]
+    }
+  },
+  "testing": {
+    "naming": {
+      "test_files": "test_*.py",
+      "test_functions": "test_*"
+    },
+    "structure": {
+      "arrange_act_assert": true,
+      "require_docstring": false
+    }
+  },
+  "linting": {
+    "enabled": true,
+    "tools": {
+      "flake8": {
+        "max_line_length": 100,
+        "ignore": ["E203", "W503"],
+        "exclude": [
+          ".git",
+          "__pycache__",
+          "build",
+          "dist"
+        ]
+      },
+      "mypy": {
+        "strict": true,
+        "ignore_missing_imports": true,
+        "disallow_untyped_defs": true
+      },
+      "pylint": {
+        "enabled": false
+      }
+    }
+  },
+  "git": {
+    "commit_message": {
+      "format": "type(scope): description",
+      "types": [
+        "feat",
+        "fix",
+        "docs",
+        "style",
+        "refactor",
+        "test",
+        "chore"
+      ],
+      "max_length": {
+        "title": 72,
+        "body": 100
+      }
+    }
+  },
+  "editor": {
+    "trim_trailing_whitespace": true,
+    "insert_final_newline": true,
+    "rulers": [100],
+    "word_wrap": false,
+    "auto_closing_pairs": true
+  }
+} 
