@@ -173,9 +173,11 @@ class SchemaDetector:
         self.logger.info(f"Detecting schema for {source_type.value} source: {source_path}")
         
         try:
-            # Check if file exists
-            if not Path(source_path).exists():
-                raise FileNotFoundError(f"File not found: {source_path}")
+            # For Hive tables, we don't need to check file existence
+            if source_type != DataSourceType.HIVE:
+                # Check if file exists
+                if not Path(source_path).exists():
+                    raise FileNotFoundError(f"File not found: {source_path}")
             
             # Validate file format
             if source_type == DataSourceType.CSV:
@@ -184,29 +186,38 @@ class SchemaDetector:
             # Read sample data
             reader = self.spark.read.options(**options)
             
-            if source_type == DataSourceType.CSV:
-                df = reader.csv(source_path, inferSchema=True, header=True)
-            elif source_type == DataSourceType.JSON:
-                df = reader.json(source_path)
-            elif source_type == DataSourceType.PARQUET:
-                df = reader.parquet(source_path)
-            elif source_type == DataSourceType.HIVE:
-                df = self.spark.table(source_path)
-            else:
-                raise ValueError(f"Unsupported source type: {source_type}")
-            
-            # Sample data
-            sample_df = df.limit(sample_size)
-            
-            # Convert sample to pandas for easier inspection
-            pandas_sample = sample_df.toPandas() if sample_size > 0 else None
-            
-            return SchemaDetectionResult(
-                source_type=source_type,
-                schema=df.schema,
-                sample_data=pandas_sample
-            )
-            
+            try:
+                if source_type == DataSourceType.CSV:
+                    df = reader.csv(source_path, inferSchema=True, header=True)
+                elif source_type == DataSourceType.JSON:
+                    df = reader.json(source_path)
+                elif source_type == DataSourceType.PARQUET:
+                    df = reader.parquet(source_path)
+                elif source_type == DataSourceType.HIVE:
+                    # Check if table exists
+                    if not self.spark._jsparkSession.catalog().tableExists(source_path):
+                        raise ValueError(f"Table or view not found: {source_path}")
+                    df = self.spark.table(source_path)
+                else:
+                    raise ValueError(f"Unsupported source type: {source_type}")
+                
+                # Sample data
+                sample_df = df.limit(sample_size)
+                
+                # Convert sample to pandas for easier inspection
+                pandas_sample = sample_df.toPandas() if sample_size > 0 else None
+                
+                return SchemaDetectionResult(
+                    source_type=source_type,
+                    schema=df.schema,
+                    sample_data=pandas_sample
+                )
+                
+            except Exception as e:
+                if "Table or view not found" in str(e):
+                    raise ValueError(f"Table or view not found: {source_path}")
+                raise
+                
         except Exception as e:
             self.logger.error(f"Schema detection failed: {e}")
             return SchemaDetectionResult(
