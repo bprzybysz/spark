@@ -1,0 +1,3 @@
+"""
+Utilities for schema detection.
+""" 
