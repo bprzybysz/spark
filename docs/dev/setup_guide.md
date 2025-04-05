@@ -4,7 +4,7 @@ This guide explains how to set up your development environment for the project.
 
 ## Prerequisites
 
-- Python 3.10 or higher
+- Python 3.11 or higher
 - Poetry for dependency management
 - Java 8 or higher (for Spark)
 - Git
@@ -22,12 +22,17 @@ cd <repository-name>
 curl -sSL https://install.python-poetry.org | python3 -
 ```
 
-3. Install dependencies:
+3. Configure Poetry to create virtual environments in the project directory (optional):
+```bash
+poetry config virtualenvs.in-project true
+```
+
+4. Install dependencies:
 ```bash
 poetry install
 ```
 
-4. Set up pre-commit hooks:
+5. Set up pre-commit hooks:
 ```bash
 poetry run pre-commit install
 ```
@@ -45,9 +50,8 @@ The project uses several tools to maintain code quality:
 - **pylint**: Code analysis
 
 These tools are configured in:
-- `.cursorcodestyle`: Main code style configuration
 - `pyproject.toml`: Poetry and tool-specific settings
-- `.flake8`: Flake8 specific configuration
+- `.cursorcodestyle**: Main code style configuration
 
 ### Testing Tools
 
@@ -90,7 +94,8 @@ poetry run mkdocs serve
     "editor.formatOnSave": true,
     "editor.rulers": [100],
     "files.trimTrailingWhitespace": true,
-    "files.insertFinalNewline": true
+    "files.insertFinalNewline": true,
+    "python.poetryPath": "poetry"
 }
 ```
 
@@ -106,6 +111,7 @@ poetry run mkdocs serve
    - Enable "Format on Save"
    - Set line length to 100
    - Enable type checking mode
+   - Set Poetry as package manager
 
 ## Environment Variables
 
@@ -186,7 +192,8 @@ export SPARK_LOCAL_IP=127.0.0.1
 
 3. **Import errors**:
 ```bash
-poetry run python -m pip install -e .
+# Reinstall in development mode
+poetry install
 ```
 
 ### Getting Help

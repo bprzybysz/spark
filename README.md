@@ -32,7 +32,7 @@ A comprehensive data engineering and machine learning pipeline integrating Hive,
 
 ### Prerequisites
 
-- Python 3.10 (strict requirement)
+- Python 3.11 (strict requirement)
 - Java 11+
 - Spark 3.3+
 - Docker (optional)
@@ -40,7 +40,7 @@ A comprehensive data engineering and machine learning pipeline integrating Hive,
 
 ### Package Management
 
-We use Poetry for dependency management to ensure reproducible builds and isolated environments:
+We use Poetry exclusively for dependency management to ensure reproducible builds and isolated environments:
 
 ```bash
 # Install Poetry
@@ -55,18 +55,25 @@ poetry add package-name
 # Add development dependency
 poetry add --group dev package-name
 
+# Add documentation dependency
+poetry add --group docs package-name
+
 # Update dependencies
 poetry update
 
-# Export requirements.txt (if needed)
-poetry export -f requirements.txt --output requirements.txt
+# Run any command in the virtual environment
+poetry run python script.py
+
+# Activate the virtual environment
+poetry shell
 ```
 
 ### Environment Management
 
-The project uses isolated environments per component:
+The project uses Poetry for environment isolation:
 
-- `poetry.lock` - Main dependency lock file
+- `pyproject.toml` - Project metadata and dependencies
+- `poetry.lock` - Locked dependencies for reproducible builds
 - `.env` - Environment variables (from .env.example)
 - `config/` - Component-specific configurations
 - `secrets/` - Secrets management (using HashiCorp Vault)
@@ -145,53 +152,17 @@ poetry run python -m workflow.progress update "Complete schema detection" --stat
    cd spark-etl-ml-pipeline
    ```
 
-2. Create a virtual environment
+2. Install Poetry and dependencies
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   curl -sSL https://install.python-poetry.org | python3 -
+   poetry install
    ```
 
-3. Install dependencies
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. Set up environment variables
+3. Set up environment variables
    ```bash
    cp .env.example .env
    # Edit .env with your configuration
    ```
-
-### Running Components
-
-#### ETL Pipelines
-
-```bash
-python -m src.data.etl.run --config config/etl.yaml
-```
-
-#### Streaming
-
-```bash
-python -m src.data.streams.run --config config/streams.yaml
-```
-
-#### Training
-
-```bash
-# Start Jupyter for interactive development
-jupyter notebook notebooks/
-
-# Or run a training job
-python -m src.ml.training.run --config config/training.yaml
-```
-
-#### API
-
-```bash
-# Start the FastAPI server
-python -m src.api.fastapi.main
-```
 
 ## Project Structure
 
@@ -201,32 +172,32 @@ python -m src.api.fastapi.main
 ├── src/                   # Source code
 │   ├── api/               # API components
 │   │   ├── fastapi/       # FastAPI implementation
-│   │   └── mcp/           # MCP servers
+│   │   └── mcp/          # MCP servers
 │   ├── core/              # Core components
 │   │   ├── config/        # Configuration management
-│   │   ├── di/            # Dependency injection
-│   │   └── logging/       # Logging infrastructure
+│   │   ├── di/           # Dependency injection
+│   │   └── logging/      # Logging infrastructure
 │   ├── data/              # Data components
-│   │   ├── etl/           # Batch ETL
-│   │   ├── hive/          # Hive integration
-│   │   ├── schema/        # Schema management
-│   │   └── streams/       # Streaming components
+│   │   ├── etl/          # Batch ETL
+│   │   ├── hive/         # Hive integration
+│   │   ├── schema/       # Schema management
+│   │   └── streams/      # Streaming components
 │   ├── ml/                # Machine learning components
 │   │   ├── inference/     # Model inference
-│   │   ├── models/        # Model definitions
-│   │   └── training/      # Model training
+│   │   ├── models/       # Model definitions
+│   │   └── training/     # Model training
 │   └── common/            # Shared utilities
 ├── tests/                 # Test suite
 ├── workflow/              # Workflow definitions
 │   ├── etl/               # ETL workflows
 │   ├── inference/         # Inference workflows
 │   ├── streaming/         # Streaming workflows
-│   └── training/          # Training workflows
+│   └── training/         # Training workflows
 ├── .env.example           # Example environment variables
-├── .gitignore             # Git ignore file
-├── pyproject.toml         # Python project configuration
-├── README.md              # This file
-└── requirements.txt       # Dependencies
+├── .gitignore            # Git ignore file
+├── pyproject.toml        # Python project configuration
+├── poetry.lock           # Locked dependencies
+└── README.md             # This file
 ```
 
 ## Development
