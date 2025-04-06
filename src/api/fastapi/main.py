@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 from src.core.di.container import get_container
 from src.core.config.settings import get_settings
 from src.ml.models.registry import ModelNotFoundError
+from src.api.fastapi.model_analytics import router as analytics_router
 
 
 # Create the application
@@ -52,15 +53,8 @@ class PredictionResponse(BaseModel):
     model_name: str = Field(..., description="Name of the model used for prediction")
     model_version: str = Field(..., description="Version of the model used")
     prediction: Any = Field(..., description="Prediction result")
-    probability: Optional[float] = Field(None, description="Prediction probability (if applicable)")
+    probability: Optional[float] = Field(None, description="Probability or confidence score")
     details: Optional[Dict[str, Any]] = Field(None, description="Additional prediction details")
-
-
-class HealthResponse(BaseModel):
-    """Model for health check responses."""
-    
-    status: str = Field(..., description="Service status")
-    version: str = Field(..., description="API version")
 
 
 class ModelsResponse(BaseModel):
@@ -69,14 +63,15 @@ class ModelsResponse(BaseModel):
     models: List[Dict[str, Any]] = Field(..., description="List of available models")
 
 
-@app.get("/health", response_model=HealthResponse, tags=["Health"])
-async def health_check():
-    """Health check endpoint."""
-    settings = get_settings()
-    return {
-        "status": "ok",
-        "version": settings.version,
-    }
+class HealthResponse(BaseModel):
+    """Model for health check response."""
+    
+    status: str = Field(..., description="Service status")
+    version: str = Field(..., description="API version")
+
+
+# Include routers
+app.include_router(analytics_router)
 
 
 @app.get("/models", response_model=ModelsResponse, tags=["Models"])
@@ -125,6 +120,12 @@ async def predict(request: PredictionRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Prediction error: {str(e)}",
         )
+
+
+@app.get("/health", response_model=HealthResponse, tags=["System"])
+async def health_check():
+    """Health check endpoint."""
+    return {"status": "healthy", "version": app.version}
 
 
 def start_server():
