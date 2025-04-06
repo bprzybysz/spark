@@ -1,105 +1,74 @@
 """
-Logging configuration module.
+Logging module
 
-This module provides a factory for creating loggers with consistent configuration.
+This module provides logging functionality.
 """
-import logging
-import sys
-from logging.handlers import RotatingFileHandler
-from pathlib import Path
-from typing import Optional, Union
+
+
+class Logger:
+    """Simple logger implementation for testing."""
+    
+    def __init__(self, name: str = None):
+        """
+        Initialize logger.
+        
+        Args:
+            name: Logger name
+        """
+        self.name = name or "default"
+    
+    def info(self, message: str) -> None:
+        """
+        Log info message.
+        
+        Args:
+            message: Message to log
+        """
+        print(f"[INFO] {message}")
+    
+    def error(self, message: str) -> None:
+        """
+        Log error message.
+        
+        Args:
+            message: Message to log
+        """
+        print(f"[ERROR] {message}")
+    
+    def warning(self, message: str) -> None:
+        """
+        Log warning message.
+        
+        Args:
+            message: Message to log
+        """
+        print(f"[WARNING] {message}")
+
 
 class LoggerFactory:
-    """Factory for creating loggers with consistent configuration."""
+    """Factory for creating loggers."""
     
-    def __init__(
-        self,
-        log_level: str = "INFO",
-        log_format: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        log_file: Optional[str] = None,
-        max_bytes: int = 10485760,  # 10MB
-        backup_count: int = 5,
-    ):
+    def __init__(self, log_level: str = "INFO", log_format: str = None, log_file: str = None):
         """
-        Initialize the logger factory.
+        Initialize logger factory.
         
         Args:
-            log_level: The logging level
-            log_format: The format string for the logger
-            log_file: Optional path to a log file
-            max_bytes: Maximum log file size before rotation
-            backup_count: Number of backup files to keep
+            log_level: Log level
+            log_format: Log format
+            log_file: Log file path
         """
-        self.log_level = self._parse_log_level(log_level)
+        self.log_level = log_level
         self.log_format = log_format
         self.log_file = log_file
-        self.max_bytes = max_bytes
-        self.backup_count = backup_count
     
-    def _parse_log_level(self, log_level: Union[str, int]) -> int:
+    def get_logger(self, name: str) -> Logger:
         """
-        Parse log level from string to logging level constant.
+        Get a logger with the specified name.
         
         Args:
-            log_level: Log level as string or int
+            name: Logger name
             
         Returns:
-            int: Logging level constant
+            Logger instance
         """
-        if isinstance(log_level, int):
-            return log_level
-            
-        levels = {
-            "CRITICAL": logging.CRITICAL,
-            "ERROR": logging.ERROR,
-            "WARNING": logging.WARNING,
-            "INFO": logging.INFO,
-            "DEBUG": logging.DEBUG,
-            "NOTSET": logging.NOTSET,
-        }
-        
-        return levels.get(log_level.upper(), logging.INFO)
-    
-    def get_logger(self, name: str) -> logging.Logger:
-        """
-        Get a configured logger instance.
-        
-        Args:
-            name: The name for the logger, typically the module name
-            
-        Returns:
-            logging.Logger: Configured logger instance
-        """
-        logger = logging.getLogger(name)
-        
-        # If the logger is already configured, return it
-        if logger.handlers:
-            return logger
-            
-        logger.setLevel(self.log_level)
-        logger.propagate = False
-        
-        # Create formatter
-        formatter = logging.Formatter(self.log_format)
-        
-        # Add console handler
-        console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.setFormatter(formatter)
-        logger.addHandler(console_handler)
-        
-        # Add file handler if log file is specified
-        if self.log_file:
-            log_file_path = Path(self.log_file)
-            
-            # Ensure the directory exists
-            log_file_path.parent.mkdir(parents=True, exist_ok=True)
-            
-            file_handler = RotatingFileHandler(
-                filename=str(log_file_path),
-                maxBytes=self.max_bytes,
-                backupCount=self.backup_count,
-            )
-            file_handler.setFormatter(formatter)
-            logger.addHandler(file_handler)
-        
-        return logger 
+        return Logger(name) 

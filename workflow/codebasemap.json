@@ -75,28 +75,58 @@
     "common": {
       "description": "Common utilities and shared code",
       "path": "src/common"
+    },
+    "monitoring": {
+      "description": "Monitoring and observability components",
+      "components": {
+        "spark_ui": {
+          "description": "Spark UI monitoring utilities",
+          "path": "src/utility/monitoring.py"
+        },
+        "logs": {
+          "description": "Log storage and indexing",
+          "paths": {
+            "spark_events": "spark-events/",
+            "application_logs": "logs/",
+            "hive_logs": "logs/hive/"
+          }
+        }
+      }
     }
   },
   "workflows": {
     "etl": {
       "description": "ETL data processing workflow",
-      "components": ["data.hive", "data.etl"],
+      "components": [
+        "data.hive",
+        "data.etl"
+      ],
       "path": "workflow/etl"
     },
     "streaming": {
       "description": "Streaming data processing workflow",
-      "components": ["data.spark_streams", "data.schema"],
+      "components": [
+        "data.spark_streams",
+        "data.schema"
+      ],
       "path": "workflow/streaming"
     },
     "training": {
       "description": "Model training workflow",
-      "components": ["data.etl", "ml.training"],
+      "components": [
+        "data.etl",
+        "ml.training"
+      ],
       "path": "workflow/training"
     },
     "inference": {
       "description": "Model inference workflow",
-      "components": ["ml.models", "ml.inference", "api.fastapi"],
+      "components": [
+        "ml.models",
+        "ml.inference",
+        "api.fastapi"
+      ],
       "path": "workflow/inference"
     }
   }
-} 
+}

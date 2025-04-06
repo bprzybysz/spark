@@ -45,6 +45,16 @@ derby.log
 logs/
 tmp/
 
+# Log directories - exclude from versioning
+spark-events/
+**/logs/
+**/*.log
+# But keep Cursor files
+!.cursor/
+!.cursorignore
+!.cursorrules
+!.cursorcodestyle
+
 # Data files
 *.csv
 *.parquet

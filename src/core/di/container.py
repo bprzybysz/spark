@@ -4,12 +4,12 @@ Dependency Injection Container module.
 This module defines the application's dependency injection container using dependency-injector.
 It provides a centralized way to configure and provide dependencies throughout the application.
 """
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 from dependency_injector import containers, providers
 
 from src.core.config.settings import Settings
-from src.core.logging.logger import LoggerFactory
+from src.core.logging.logger import LoggerFactory, Logger
 
 
 class Container(containers.DeclarativeContainer):
@@ -62,6 +62,33 @@ class Container(containers.DeclarativeContainer):
     schema_registry = providers.Singleton(
         lambda: None,  # Will be replaced with actual implementation
     )
+
+
+_container: Optional[Container] = None
+
+
+def get_container() -> Container:
+    """
+    Get the global container instance.
+    
+    Returns:
+        Container instance
+    """
+    global _container
+    if _container is None:
+        _container = Container()
+    return _container
+
+
+def set_container(container: Container) -> None:
+    """
+    Set the global container instance.
+    
+    Args:
+        container: Container instance to set
+    """
+    global _container
+    _container = container
 
 
 def get_container(override_config: Dict[str, Any] = None) -> Container:
