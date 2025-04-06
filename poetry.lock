@@ -1304,6 +1304,40 @@ watchdog = ["watchdog (>=4.0.0)"]
 zoneinfo = ["tzdata (>=2025.2) ; sys_platform == \"win32\" or sys_platform == \"emscripten\""]
 
 [[package]]
+name = "hypothesis"
+version = "6.130.8"
+description = "A library for property-based testing"
+optional = false
+python-versions = ">=3.9"
+groups = ["dev"]
+files = [
+    {file = "hypothesis-6.130.8-py3-none-any.whl", hash = "sha256:8ddafde382fb96163c2a51c5a7c540d2642b2802a596347c13ac8fbc9de50d70"},
+    {file = "hypothesis-6.130.8.tar.gz", hash = "sha256:1b719943011375b1d66f01f858181c3c3ae49324cd7d7b359229cbf95a7785ce"},
+]
+
+[package.dependencies]
+attrs = ">=22.2.0"
+sortedcontainers = ">=2.1.0,<3.0.0"
+
+[package.extras]
+all = ["black (>=19.10b0)", "click (>=7.0)", "crosshair-tool (>=0.0.85)", "django (>=4.2)", "dpcontracts (>=0.4)", "hypothesis-crosshair (>=0.0.20)", "lark (>=0.10.1)", "libcst (>=0.3.16)", "numpy (>=1.19.3)", "pandas (>=1.1)", "pytest (>=4.6)", "python-dateutil (>=1.4)", "pytz (>=2014.1)", "redis (>=3.0.0)", "rich (>=9.0.0)", "tzdata (>=2025.2) ; sys_platform == \"win32\" or sys_platform == \"emscripten\"", "watchdog (>=4.0.0)"]
+cli = ["black (>=19.10b0)", "click (>=7.0)", "rich (>=9.0.0)"]
+codemods = ["libcst (>=0.3.16)"]
+crosshair = ["crosshair-tool (>=0.0.85)", "hypothesis-crosshair (>=0.0.20)"]
+dateutil = ["python-dateutil (>=1.4)"]
+django = ["django (>=4.2)"]
+dpcontracts = ["dpcontracts (>=0.4)"]
+ghostwriter = ["black (>=19.10b0)"]
+lark = ["lark (>=0.10.1)"]
+numpy = ["numpy (>=1.19.3)"]
+pandas = ["pandas (>=1.1)"]
+pytest = ["pytest (>=4.6)"]
+pytz = ["pytz (>=2014.1)"]
+redis = ["redis (>=3.0.0)"]
+watchdog = ["watchdog (>=4.0.0)"]
+zoneinfo = ["tzdata (>=2025.2) ; sys_platform == \"win32\" or sys_platform == \"emscripten\""]
+
+[[package]]
 name = "identify"
 version = "2.6.9"
 description = "File identification library for Python"
@@ -1699,11 +1733,15 @@ test = ["ipykernel", "pre-commit", "pytest (<8)", "pytest-cov", "pytest-timeout"
 [[package]]
 name = "jupyter-events"
 version = "0.12.0"
+version = "0.12.0"
 description = "Jupyter Event System library"
 optional = false
 python-versions = ">=3.9"
+python-versions = ">=3.9"
 groups = ["dev"]
 files = [
+    {file = "jupyter_events-0.12.0-py3-none-any.whl", hash = "sha256:6464b2fa5ad10451c3d35fabc75eab39556ae1e2853ad0c0cc31b656731a97fb"},
+    {file = "jupyter_events-0.12.0.tar.gz", hash = "sha256:fc3fce98865f6784c9cd0a56a20644fc6098f21c8c33834a8d9fe383c17e554b"},
     {file = "jupyter_events-0.12.0-py3-none-any.whl", hash = "sha256:6464b2fa5ad10451c3d35fabc75eab39556ae1e2853ad0c0cc31b656731a97fb"},
     {file = "jupyter_events-0.12.0.tar.gz", hash = "sha256:fc3fce98865f6784c9cd0a56a20644fc6098f21c8c33834a8d9fe383c17e554b"},
 ]
@@ -1711,8 +1749,11 @@ files = [
 [package.dependencies]
 jsonschema = {version = ">=4.18.0", extras = ["format-nongpl"]}
 packaging = "*"
+jsonschema = {version = ">=4.18.0", extras = ["format-nongpl"]}
+packaging = "*"
 python-json-logger = ">=2.0.4"
 pyyaml = ">=5.3"
+referencing = "*"
 referencing = "*"
 rfc3339-validator = "*"
 rfc3986-validator = ">=0.1.1"
@@ -1720,6 +1761,8 @@ traitlets = ">=5.3"
 
 [package.extras]
 cli = ["click", "rich"]
+docs = ["jupyterlite-sphinx", "myst-parser", "pydata-sphinx-theme (>=0.16)", "sphinx (>=8)", "sphinxcontrib-spelling"]
+test = ["click", "pre-commit", "pytest (>=7.0)", "pytest-asyncio (>=0.19.0)", "pytest-console-scripts", "rich"]
 docs = ["jupyterlite-sphinx", "myst-parser", "pydata-sphinx-theme (>=0.16)", "sphinx (>=8)", "sphinxcontrib-spelling"]
 test = ["click", "pre-commit", "pytest (>=7.0)", "pytest-asyncio (>=0.19.0)", "pytest-console-scripts", "rich"]
 
@@ -1741,11 +1784,15 @@ jupyter-server = ">=1.1.2"
 [[package]]
 name = "jupyter-server"
 version = "2.15.0"
+version = "2.15.0"
 description = "The backend—i.e. core services, APIs, and REST endpoints—to Jupyter web applications."
 optional = false
 python-versions = ">=3.9"
+python-versions = ">=3.9"
 groups = ["dev"]
 files = [
+    {file = "jupyter_server-2.15.0-py3-none-any.whl", hash = "sha256:872d989becf83517012ee669f09604aa4a28097c0bd90b2f424310156c2cdae3"},
+    {file = "jupyter_server-2.15.0.tar.gz", hash = "sha256:9d446b8697b4f7337a1b7cdcac40778babdd93ba614b6d68ab1c0c918f1c4084"},
     {file = "jupyter_server-2.15.0-py3-none-any.whl", hash = "sha256:872d989becf83517012ee669f09604aa4a28097c0bd90b2f424310156c2cdae3"},
     {file = "jupyter_server-2.15.0.tar.gz", hash = "sha256:9d446b8697b4f7337a1b7cdcac40778babdd93ba614b6d68ab1c0c918f1c4084"},
 ]
@@ -1754,12 +1801,20 @@ files = [
 anyio = ">=3.1.0"
 argon2-cffi = ">=21.1"
 jinja2 = ">=3.0.3"
+argon2-cffi = ">=21.1"
+jinja2 = ">=3.0.3"
 jupyter-client = ">=7.4.4"
 jupyter-core = ">=4.12,<5.0.dev0 || >=5.1.dev0"
 jupyter-events = ">=0.11.0"
 jupyter-server-terminals = ">=0.4.4"
+jupyter-events = ">=0.11.0"
+jupyter-server-terminals = ">=0.4.4"
 nbconvert = ">=6.4.4"
 nbformat = ">=5.3.0"
+overrides = ">=5.0"
+packaging = ">=22.0"
+prometheus-client = ">=0.9"
+pywinpty = {version = ">=2.0.1", markers = "os_name == \"nt\""}
 overrides = ">=5.0"
 packaging = ">=22.0"
 prometheus-client = ">=0.9"
@@ -1770,8 +1825,11 @@ terminado = ">=0.8.3"
 tornado = ">=6.2.0"
 traitlets = ">=5.6.0"
 websocket-client = ">=1.7"
+websocket-client = ">=1.7"
 
 [package.extras]
+docs = ["ipykernel", "jinja2", "jupyter-client", "myst-parser", "nbformat", "prometheus-client", "pydata-sphinx-theme", "send2trash", "sphinx-autodoc-typehints", "sphinxcontrib-github-alt", "sphinxcontrib-openapi (>=0.8.0)", "sphinxcontrib-spelling", "sphinxemoji", "tornado", "typing-extensions"]
+test = ["flaky", "ipykernel", "pre-commit", "pytest (>=7.0,<9)", "pytest-console-scripts", "pytest-jupyter[server] (>=0.7)", "pytest-timeout", "requests"]
 docs = ["ipykernel", "jinja2", "jupyter-client", "myst-parser", "nbformat", "prometheus-client", "pydata-sphinx-theme", "send2trash", "sphinx-autodoc-typehints", "sphinxcontrib-github-alt", "sphinxcontrib-openapi (>=0.8.0)", "sphinxcontrib-spelling", "sphinxemoji", "tornado", "typing-extensions"]
 test = ["flaky", "ipykernel", "pre-commit", "pytest (>=7.0,<9)", "pytest-console-scripts", "pytest-jupyter[server] (>=0.7)", "pytest-timeout", "requests"]
 
@@ -1798,11 +1856,15 @@ test = ["jupyter-server (>=2.0.0)", "pytest (>=7.0)", "pytest-jupyter[server] (>
 [[package]]
 name = "jupyterlab"
 version = "4.4.0"
+version = "4.4.0"
 description = "JupyterLab computational environment"
 optional = false
 python-versions = ">=3.9"
+python-versions = ">=3.9"
 groups = ["dev"]
 files = [
+    {file = "jupyterlab-4.4.0-py3-none-any.whl", hash = "sha256:61d33991fbb352cc7caac08bd0c34577fea86d8d5d9772600d9d5a6bcbc882c0"},
+    {file = "jupyterlab-4.4.0.tar.gz", hash = "sha256:f1767d5f0104e40f3b4a63bf6892bbef8e4704dcabf0c78408a3bdc411792f04"},
     {file = "jupyterlab-4.4.0-py3-none-any.whl", hash = "sha256:61d33991fbb352cc7caac08bd0c34577fea86d8d5d9772600d9d5a6bcbc882c0"},
     {file = "jupyterlab-4.4.0.tar.gz", hash = "sha256:f1767d5f0104e40f3b4a63bf6892bbef8e4704dcabf0c78408a3bdc411792f04"},
 ]
@@ -1816,8 +1878,10 @@ jupyter-core = "*"
 jupyter-lsp = ">=2.0.0"
 jupyter-server = ">=2.4.0,<3"
 jupyterlab-server = ">=2.27.1,<3"
+jupyterlab-server = ">=2.27.1,<3"
 notebook-shim = ">=0.2"
 packaging = "*"
+setuptools = ">=41.1.0"
 setuptools = ">=41.1.0"
 tornado = ">=6.2.0"
 traitlets = "*"
@@ -1826,7 +1890,11 @@ traitlets = "*"
 dev = ["build", "bump2version", "coverage", "hatch", "pre-commit", "pytest-cov", "ruff (==0.9.9)"]
 docs = ["jsx-lexer", "myst-parser", "pydata-sphinx-theme (>=0.13.0)", "pytest", "pytest-check-links", "pytest-jupyter", "sphinx (>=1.8,<8.2.0)", "sphinx-copybutton"]
 docs-screenshots = ["altair (==5.5.0)", "ipython (==8.16.1)", "ipywidgets (==8.1.5)", "jupyterlab-geojson (==3.4.0)", "jupyterlab-language-pack-zh-cn (==4.3.post1)", "matplotlib (==3.10.0)", "nbconvert (>=7.0.0)", "pandas (==2.2.3)", "scipy (==1.15.1)", "vega-datasets (==0.9.0)"]
+dev = ["build", "bump2version", "coverage", "hatch", "pre-commit", "pytest-cov", "ruff (==0.9.9)"]
+docs = ["jsx-lexer", "myst-parser", "pydata-sphinx-theme (>=0.13.0)", "pytest", "pytest-check-links", "pytest-jupyter", "sphinx (>=1.8,<8.2.0)", "sphinx-copybutton"]
+docs-screenshots = ["altair (==5.5.0)", "ipython (==8.16.1)", "ipywidgets (==8.1.5)", "jupyterlab-geojson (==3.4.0)", "jupyterlab-language-pack-zh-cn (==4.3.post1)", "matplotlib (==3.10.0)", "nbconvert (>=7.0.0)", "pandas (==2.2.3)", "scipy (==1.15.1)", "vega-datasets (==0.9.0)"]
 test = ["coverage", "pytest (>=7.0)", "pytest-check-links (>=0.7)", "pytest-console-scripts", "pytest-cov", "pytest-jupyter (>=0.5.3)", "pytest-timeout", "pytest-tornasync", "requests", "requests-cache", "virtualenv"]
+upgrade-extension = ["copier (>=9,<10)", "jinja2-time (<0.3)", "pydantic (<3.0)", "pyyaml-include (<3.0)", "tomli-w (<2.0)"]
 upgrade-extension = ["copier (>=9,<10)", "jinja2-time (<0.3)", "pydantic (<3.0)", "pyyaml-include (<3.0)", "tomli-w (<2.0)"]
 
 [[package]]
@@ -1844,11 +1912,15 @@ files = [
 [[package]]
 name = "jupyterlab-server"
 version = "2.27.3"
+version = "2.27.3"
 description = "A set of server components for JupyterLab and JupyterLab like applications."
 optional = false
 python-versions = ">=3.8"
+python-versions = ">=3.8"
 groups = ["dev"]
 files = [
+    {file = "jupyterlab_server-2.27.3-py3-none-any.whl", hash = "sha256:e697488f66c3db49df675158a77b3b017520d772c6e1548c7d9bcc5df7944ee4"},
+    {file = "jupyterlab_server-2.27.3.tar.gz", hash = "sha256:eb36caca59e74471988f0ae25c77945610b887f777255aa21f8065def9e51ed4"},
     {file = "jupyterlab_server-2.27.3-py3-none-any.whl", hash = "sha256:e697488f66c3db49df675158a77b3b017520d772c6e1548c7d9bcc5df7944ee4"},
     {file = "jupyterlab_server-2.27.3.tar.gz", hash = "sha256:eb36caca59e74471988f0ae25c77945610b887f777255aa21f8065def9e51ed4"},
 ]
@@ -1858,12 +1930,16 @@ babel = ">=2.10"
 jinja2 = ">=3.0.3"
 json5 = ">=0.9.0"
 jsonschema = ">=4.18.0"
+jsonschema = ">=4.18.0"
 jupyter-server = ">=1.21,<3"
 packaging = ">=21.3"
+requests = ">=2.31"
 requests = ">=2.31"
 
 [package.extras]
 docs = ["autodoc-traits", "jinja2 (<3.2.0)", "mistune (<4)", "myst-parser", "pydata-sphinx-theme", "sphinx", "sphinx-copybutton", "sphinxcontrib-openapi (>0.8)"]
+openapi = ["openapi-core (>=0.18.0,<0.19.0)", "ruamel-yaml"]
+test = ["hatch", "ipykernel", "openapi-core (>=0.18.0,<0.19.0)", "openapi-spec-validator (>=0.6.0,<0.8.0)", "pytest (>=7.0,<8)", "pytest-console-scripts", "pytest-cov", "pytest-jupyter[server] (>=0.6.2)", "pytest-timeout", "requests-mock", "ruamel-yaml", "sphinxcontrib-spelling", "strict-rfc3339", "werkzeug"]
 openapi = ["openapi-core (>=0.18.0,<0.19.0)", "ruamel-yaml"]
 test = ["hatch", "ipykernel", "openapi-core (>=0.18.0,<0.19.0)", "openapi-spec-validator (>=0.6.0,<0.8.0)", "pytest (>=7.0,<8)", "pytest-console-scripts", "pytest-cov", "pytest-jupyter[server] (>=0.6.2)", "pytest-timeout", "requests-mock", "ruamel-yaml", "sphinxcontrib-spelling", "strict-rfc3339", "werkzeug"]
 
@@ -2348,8 +2424,8 @@ files = [
 
 [package.dependencies]
 numpy = [
-    {version = ">=1.23.3", markers = "python_version >= \"3.11\""},
     {version = ">=1.26.0", markers = "python_version == \"3.12\""},
+    {version = ">=1.23.3", markers = "python_version == \"3.11\""},
 ]
 
 [package.extras]
@@ -2541,6 +2617,7 @@ files = [
 [[package]]
 name = "notebook"
 version = "7.0.7"
+version = "7.0.7"
 description = "Jupyter Notebook - A web-based notebook environment for interactive computing"
 optional = false
 python-versions = ">=3.8"
@@ -2548,10 +2625,13 @@ groups = ["dev"]
 files = [
     {file = "notebook-7.0.7-py3-none-any.whl", hash = "sha256:289b606d7e173f75a18beb1406ef411b43f97f7a9c55ba03efa3622905a62346"},
     {file = "notebook-7.0.7.tar.gz", hash = "sha256:3bcff00c17b3ac142ef5f436d50637d936b274cfa0b41f6ac0175363de9b4e09"},
+    {file = "notebook-7.0.7-py3-none-any.whl", hash = "sha256:289b606d7e173f75a18beb1406ef411b43f97f7a9c55ba03efa3622905a62346"},
+    {file = "notebook-7.0.7.tar.gz", hash = "sha256:3bcff00c17b3ac142ef5f436d50637d936b274cfa0b41f6ac0175363de9b4e09"},
 ]
 
 [package.dependencies]
 jupyter-server = ">=2.4.0,<3"
+jupyterlab = ">=4.0.2,<5"
 jupyterlab = ">=4.0.2,<5"
 jupyterlab-server = ">=2.22.1,<3"
 notebook-shim = ">=0.2,<0.3"
@@ -2871,8 +2951,8 @@ files = [
 
 [package.dependencies]
 numpy = [
-    {version = ">=1.23.2", markers = "python_version == \"3.11\""},
     {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
+    {version = ">=1.23.2", markers = "python_version == \"3.11\""},
 ]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
@@ -3140,6 +3220,18 @@ files = [
 
 [package.extras]
 gssapi = ["kerberos (>=1.3.0)"]
+
+[[package]]
+name = "py-cpuinfo"
+version = "9.0.0"
+description = "Get CPU info with pure Python"
+optional = false
+python-versions = "*"
+groups = ["dev"]
+files = [
+    {file = "py-cpuinfo-9.0.0.tar.gz", hash = "sha256:3cdbbf3fac90dc6f118bfd64384f309edeadd902d7c8fb17f02ffa1fc3f49690"},
+    {file = "py_cpuinfo-9.0.0-py3-none-any.whl", hash = "sha256:859625bc251f64e21f077d099d4162689c762b5d6a4c3c97553d56241c9674d5"},
+]
 
 [[package]]
 name = "py-cpuinfo"
@@ -3535,22 +3627,68 @@ elasticsearch = ["elasticsearch"]
 histogram = ["pygal", "pygaljs", "setuptools"]
 
 [[package]]
-name = "pytest-cov"
-version = "6.1.1"
-description = "Pytest plugin for measuring coverage."
+name = "pytest-asyncio"
+version = "0.26.0"
+description = "Pytest support for asyncio"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
+    {file = "pytest_asyncio-0.26.0-py3-none-any.whl", hash = "sha256:7b51ed894f4fbea1340262bdae5135797ebbe21d8638978e35d31c6d19f72fb0"},
+    {file = "pytest_asyncio-0.26.0.tar.gz", hash = "sha256:c4df2a697648241ff39e7f0e4a73050b03f123f760673956cf0d72a4990e312f"},
+]
+
+[package.dependencies]
+pytest = ">=8.2,<9"
+
+[package.extras]
+docs = ["sphinx (>=5.3)", "sphinx-rtd-theme (>=1)"]
+testing = ["coverage (>=6.2)", "hypothesis (>=5.7.1)"]
+
+[[package]]
+name = "pytest-benchmark"
+version = "5.1.0"
+description = "A ``pytest`` fixture for benchmarking code. It will group the tests into rounds that are calibrated to the chosen timer."
+optional = false
+python-versions = ">=3.9"
+groups = ["dev"]
+files = [
+    {file = "pytest-benchmark-5.1.0.tar.gz", hash = "sha256:9ea661cdc292e8231f7cd4c10b0319e56a2118e2c09d9f50e1b3d150d2aca105"},
+    {file = "pytest_benchmark-5.1.0-py3-none-any.whl", hash = "sha256:922de2dfa3033c227c96da942d1878191afa135a29485fb942e85dff1c592c89"},
+]
+
+[package.dependencies]
+py-cpuinfo = "*"
+pytest = ">=8.1"
+
+[package.extras]
+aspect = ["aspectlib"]
+elasticsearch = ["elasticsearch"]
+histogram = ["pygal", "pygaljs", "setuptools"]
+
+[[package]]
+name = "pytest-cov"
+version = "6.1.1"
+version = "6.1.1"
+description = "Pytest plugin for measuring coverage."
+optional = false
+python-versions = ">=3.9"
+python-versions = ">=3.9"
+groups = ["dev"]
+files = [
+    {file = "pytest_cov-6.1.1-py3-none-any.whl", hash = "sha256:bddf29ed2d0ab6f4df17b4c55b0a657287db8684af9c42ea546b21b1041b3dde"},
+    {file = "pytest_cov-6.1.1.tar.gz", hash = "sha256:46935f7aaefba760e716c2ebfbe1c216240b9592966e7da99ea8292d4d3e2a0a"},
     {file = "pytest_cov-6.1.1-py3-none-any.whl", hash = "sha256:bddf29ed2d0ab6f4df17b4c55b0a657287db8684af9c42ea546b21b1041b3dde"},
     {file = "pytest_cov-6.1.1.tar.gz", hash = "sha256:46935f7aaefba760e716c2ebfbe1c216240b9592966e7da99ea8292d4d3e2a0a"},
 ]
 
 [package.dependencies]
 coverage = {version = ">=7.5", extras = ["toml"]}
+coverage = {version = ">=7.5", extras = ["toml"]}
 pytest = ">=4.6"
 
 [package.extras]
+testing = ["fields", "hunter", "process-tests", "pytest-xdist", "virtualenv"]
 testing = ["fields", "hunter", "process-tests", "pytest-xdist", "virtualenv"]
 
 [[package]]
@@ -4090,6 +4228,7 @@ description = "Easily download, build, install, upgrade, and uninstall Python pa
 optional = false
 python-versions = ">=3.9"
 groups = ["main", "dev"]
+groups = ["main", "dev"]
 files = [
     {file = "setuptools-78.1.0-py3-none-any.whl", hash = "sha256:3e386e96793c8702ae83d17b853fb93d3e09ef82ec62722e61da5cd22376dcd8"},
     {file = "setuptools-78.1.0.tar.gz", hash = "sha256:18fd474d4a82a5f83dac888df697af65afa82dec7323d09c3e37d1f14288da54"},
@@ -4126,6 +4265,18 @@ groups = ["main", "dev"]
 files = [
     {file = "sniffio-1.3.1-py3-none-any.whl", hash = "sha256:2f6da418d1f1e0fddd844478f41680e794e6051915791a034ff65e5f100525a2"},
     {file = "sniffio-1.3.1.tar.gz", hash = "sha256:f4324edc670a0f49750a81b895f35c3adb843cca46f0530f79fc1babb23789dc"},
+]
+
+[[package]]
+name = "sortedcontainers"
+version = "2.4.0"
+description = "Sorted Containers -- Sorted List, Sorted Dict, Sorted Set"
+optional = false
+python-versions = "*"
+groups = ["dev"]
+files = [
+    {file = "sortedcontainers-2.4.0-py2.py3-none-any.whl", hash = "sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0"},
+    {file = "sortedcontainers-2.4.0.tar.gz", hash = "sha256:25caa5a06cc30b6b83d11423433f65d1f9d76c4c6a0c90e3379eaa43b9bfdb88"},
 ]
 
 [[package]]
