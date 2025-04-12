@@ -98,7 +98,7 @@ def create_spark_session(config: Dict[str, Any]) -> SparkSession:
 
 
 def optimize_tensorflow_config(settings: Union[MLSettings, M1MLSettings]) -> None:
-    """Optimize TensorFlow configuration for maximum CPU utilization."""
+    """Optimize TensorFlow configuration for maximum CPU/GPU utilization."""
     physical_devices = tf.config.list_physical_devices()
     print("\nAvailable TensorFlow Devices:")
     print("-" * 40)
@@ -106,12 +106,22 @@ def optimize_tensorflow_config(settings: Union[MLSettings, M1MLSettings]) -> Non
         print(f"- {device.device_type}: {device.name}")
     
     # Enable Metal GPU if available
-    if hasattr(settings, "tf_config") and settings.tf_config.get("enable_metal"):
+    metal_devices = tf.config.list_physical_devices('GPU')
+    if metal_devices and hasattr(settings, "tf_config") and settings.tf_config.get("enable_metal"):
         try:
-            tf.config.experimental.set_memory_growth(physical_devices[0], True)
-            print("\nMetal GPU enabled with memory growth")
-        except:
-            print("\nWarning: Could not configure Metal GPU")
+            # Configure Metal device
+            tf.config.experimental.set_memory_growth(metal_devices[0], True)
+            tf.config.set_logical_device_configuration(
+                metal_devices[0],
+                [tf.config.LogicalDeviceConfiguration(memory_limit=settings.tf_config.get("gpu_memory_fraction", 0.8) * 100)]
+            )
+            print("\nMetal GPU enabled with memory growth and memory limit")
+            
+            # Set mixed precision policy for better performance
+            tf.keras.mixed_precision.set_global_policy('mixed_float16')
+            print("Mixed precision (float16) enabled for better GPU performance")
+        except Exception as e:
+            print(f"\nWarning: Could not configure Metal GPU: {e}")
     
     # Maximize thread utilization
     num_cores = psutil.cpu_count(logical=True)
@@ -231,34 +241,34 @@ def run_spark_benchmark(spark: SparkSession, df: Any) -> Tuple[float, float, flo
     return end_time - start_time, (end_cpu + start_cpu) / 2, (end_mem + start_mem) / 2
 
 
-def run_tensorflow_benchmark(settings: Union[MLSettings, M1MLSettings]) -> Tuple[float, float, float]:
-    """Run TensorFlow benchmark with intensive computation."""
+def run_tensorflow_benchmark(settings: Union[MLSettings, M1MLSettings]) -> Tuple[float, float, float, Dict[str, Any]]:
+    """Run TensorFlow benchmark with intensive computation and GPU monitoring."""
     optimize_tensorflow_config(settings)
     start_time = time.time()
     start_cpu, start_mem = monitor_resources()
     
-    # More compute-intensive dataset
-    num_samples = 50000  # Increased samples
-    num_features = 4000  # Doubled features
+    # More compute-intensive dataset with larger dimensions
+    num_samples = 100000  # Doubled samples
+    num_features = 8000   # Doubled features
     X = np.random.randn(num_samples, num_features).astype(np.float32)
     y = np.sum(X, axis=1, keepdims=True).astype(np.float32)
     
     # Create deeper compute-intensive model architecture
     model = tf.keras.Sequential([
+        tf.keras.layers.Dense(8192, activation='relu', kernel_initializer='glorot_uniform'),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.Dropout(0.3),
         tf.keras.layers.Dense(4096, activation='relu', kernel_initializer='glorot_uniform'),
         tf.keras.layers.BatchNormalization(),
         tf.keras.layers.Dropout(0.3),
         tf.keras.layers.Dense(2048, activation='relu', kernel_initializer='glorot_uniform'),
         tf.keras.layers.BatchNormalization(),
-        tf.keras.layers.Dropout(0.3),
-        tf.keras.layers.Dense(1024, activation='relu', kernel_initializer='glorot_uniform'),
-        tf.keras.layers.BatchNormalization(),
         tf.keras.layers.Dropout(0.2),
-        tf.keras.layers.Dense(512, activation='relu', kernel_initializer='glorot_uniform'),
+        tf.keras.layers.Dense(1024, activation='relu', kernel_initializer='glorot_uniform'),
         tf.keras.layers.Dense(1)
     ])
     
-    # Configure optimizer for maximum CPU utilization
+    # Configure optimizer with mixed precision
     optimizer = tf.keras.optimizers.Adam(
         learning_rate=settings.learning_rate,
         beta_1=0.9,
@@ -270,37 +280,80 @@ def run_tensorflow_benchmark(settings: Union[MLSettings, M1MLSettings]) -> Tuple
         optimizer=optimizer,
         loss=tf.keras.losses.MeanSquaredError(),
         metrics=['mae'],
-        jit_compile=True  # Enable XLA compilation
+        jit_compile=True  # Enable XLA compilation for the model instead
     )
     
-    # Train with optimized batch size
+    # Train with optimized batch size and GPU monitoring
     print("\nTraining TensorFlow model...")
-    batch_size = 128  # Smaller batch size for more frequent updates
+    batch_size = settings.batch_size
     
-    # Monitor CPU usage during training
-    class CPUMonitorCallback(tf.keras.callbacks.Callback):
+    # Initialize metrics storage
+    metrics_history = {
+        'gpu_utilization': [],
+        'gpu_memory': [],
+        'batch_times': [],
+        'epoch_times': []
+    }
+    
+    class GPUMonitorCallback(tf.keras.callbacks.Callback):
+        def on_epoch_begin(self, epoch, logs=None):
+            self.epoch_start_time = time.time()
+        
         def on_epoch_end(self, epoch, logs=None):
+            epoch_time = time.time() - self.epoch_start_time
+            metrics_history['epoch_times'].append(epoch_time)
+            
             cpu, mem = monitor_resources()
-            print(f"\nEpoch {epoch + 1} CPU Usage: {cpu:.1f}%, Memory: {mem:.1f}%")
+            print(f"\nEpoch {epoch + 1} Stats:")
+            print(f"Time: {epoch_time:.2f}s")
+            print(f"CPU Usage: {cpu:.1f}%")
+            print(f"Memory: {mem:.1f}%")
+            
+            # Get GPU stats if available
+            try:
+                gpu_info = tf.config.experimental.get_memory_info('GPU:0')
+                gpu_mem_used = gpu_info['peak'] / (1024 ** 3)  # Convert to GB
+                metrics_history['gpu_memory'].append(gpu_mem_used)
+                print(f"GPU Memory: {gpu_mem_used:.2f}GB")
+            except:
+                pass
         
         def on_batch_end(self, batch, logs=None):
             if batch % 50 == 0:  # Monitor every 50 batches
+                metrics_history['batch_times'].append(time.time())
                 cpu, _ = monitor_resources()
-                print(f"Batch {batch} CPU Usage: {cpu:.1f}%")
+                metrics_history['gpu_utilization'].append(cpu)
     
-    model.fit(
+    # Add early stopping to prevent unnecessary computation
+    early_stopping = tf.keras.callbacks.EarlyStopping(
+        monitor='val_loss',
+        patience=2,
+        restore_best_weights=True
+    )
+    
+    history = model.fit(
         X, y,
-        epochs=5,  # Fixed number of epochs
+        epochs=10,
         batch_size=batch_size,
         verbose=1,
         validation_split=0.2,
-        callbacks=[CPUMonitorCallback()]
+        callbacks=[GPUMonitorCallback(), early_stopping]
     )
     
     end_time = time.time()
     end_cpu, end_mem = monitor_resources()
     
-    return end_time - start_time, (end_cpu + start_cpu) / 2, (end_mem + start_mem) / 2
+    # Calculate performance metrics
+    metrics_history.update({
+        'training_time': end_time - start_time,
+        'avg_epoch_time': np.mean(metrics_history['epoch_times']),
+        'final_loss': history.history['loss'][-1],
+        'final_val_loss': history.history['val_loss'][-1],
+        'avg_gpu_utilization': np.mean(metrics_history['gpu_utilization']) if metrics_history['gpu_utilization'] else 0,
+        'peak_gpu_memory': max(metrics_history['gpu_memory']) if metrics_history['gpu_memory'] else 0
+    })
+    
+    return end_time - start_time, (end_cpu + start_cpu) / 2, (end_mem + start_mem) / 2, metrics_history
 
 
 def test_performance_comparison():
@@ -325,7 +378,7 @@ def test_performance_comparison():
     df = generate_test_data(default_spark)
     
     default_spark_time, default_spark_cpu, default_spark_mem = run_spark_benchmark(default_spark, df)
-    default_tf_time, default_tf_cpu, default_tf_mem = run_tensorflow_benchmark(default_settings.ml)
+    default_tf_time, default_tf_cpu, default_tf_mem, default_tf_metrics = run_tensorflow_benchmark(default_settings.ml)
     
     default_spark.stop()
     
@@ -337,7 +390,7 @@ def test_performance_comparison():
     df = generate_test_data(m1_spark)
     
     m1_spark_time, m1_spark_cpu, m1_spark_mem = run_spark_benchmark(m1_spark, df)
-    m1_tf_time, m1_tf_cpu, m1_tf_mem = run_tensorflow_benchmark(m1_settings.ml)
+    m1_tf_time, m1_tf_cpu, m1_tf_mem, m1_tf_metrics = run_tensorflow_benchmark(m1_settings.ml)
     
     m1_spark.stop()
     
