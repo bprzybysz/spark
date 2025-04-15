@@ -30,7 +30,7 @@ class M1SparkSettings(BaseModel):
         self._config = {}
         
         # Calculate optimal memory fractions
-        executor_mem_fraction = 0.8  # Reserve 20% for system
+        executor_mem_fraction = 0.85  # Reserve 15% for system
         storage_mem_fraction = 0.6   # 60% of executor memory for storage
         shuffle_mem_fraction = 0.3   # 30% of executor memory for shuffle
         
@@ -48,54 +48,73 @@ class M1SparkSettings(BaseModel):
             # CPU configuration
             "spark.driver.cores": str(cpu_count),
             "spark.executor.cores": str(cpu_count),
-            "spark.default.parallelism": str(cpu_count * 2),
+            "spark.default.parallelism": str(cpu_count * 4),  # Increased parallelism
             "spark.task.cpus": "1",
+            "spark.task.maxFailures": "4",  # Increased failure tolerance
             
             # Shuffle configuration
-            "spark.shuffle.file.buffer": "1m",
-            "spark.shuffle.unsafe.file.output.buffer": "1m",
-            "spark.shuffle.service.enabled": "false",  # Disable external shuffle service for local execution
+            "spark.shuffle.file.buffer": "2m",  # Increased buffer size
+            "spark.shuffle.unsafe.file.output.buffer": "2m",
+            "spark.shuffle.service.enabled": "false",
+            "spark.shuffle.compress": "true",
+            "spark.shuffle.spill.compress": "true",
+            "spark.shuffle.io.maxRetries": "6",  # Increased retry attempts
+            "spark.shuffle.io.retryWait": "10s",  # Increased retry wait time
             
             # Network configuration
-            "spark.network.timeout": "800s",
-            "spark.executor.heartbeatInterval": "60s",
-            "spark.files.fetchTimeout": "120s",
+            "spark.network.timeout": "1200s",  # Increased timeout
+            "spark.executor.heartbeatInterval": "30s",  # Reduced heartbeat interval
             "spark.storage.blockManagerSlaveTimeoutMs": "300000",
+            "spark.network.maxRetries": "5",  # Increased network retries
+            "spark.locality.wait": "5s",  # Reduced locality wait
             
             # SQL configuration
             "spark.sql.adaptive.enabled": "true",
             "spark.sql.adaptive.coalescePartitions.enabled": "true",
             "spark.sql.adaptive.localShuffleReader.enabled": "true",
             "spark.sql.adaptive.skewJoin.enabled": "true",
-            "spark.sql.shuffle.partitions": str(cpu_count * 2),
-            "spark.sql.files.maxPartitionBytes": "128m",
-            "spark.sql.adaptive.advisoryPartitionSizeInBytes": "128m",
+            "spark.sql.shuffle.partitions": str(cpu_count * 4),
+            "spark.sql.files.maxPartitionBytes": "256m",  # Increased partition size
+            "spark.sql.adaptive.advisoryPartitionSizeInBytes": "256m",
             "spark.sql.tungsten.enabled": "true",
             "spark.sql.execution.arrow.pyspark.enabled": "true",
+            "spark.sql.execution.arrow.maxRecordsPerBatch": "10000",  # Optimized batch size
+            "spark.sql.execution.arrow.fallback.enabled": "true",
             
             # Memory management
             "spark.memory.offHeap.enabled": "true",
             "spark.memory.offHeap.size": "2g",
             "spark.cleaner.periodicGC.interval": "30min",
+            "spark.cleaner.referenceTracking": "true",
+            "spark.cleaner.referenceTracking.blocking": "true",
+            "spark.cleaner.referenceTracking.cleanCheckpoints": "true",
             
             # Serialization
             "spark.serializer": "org.apache.spark.serializer.KryoSerializer",
-            "spark.kryoserializer.buffer.max": "1g",
-            
-            # Compression
+            "spark.kryoserializer.buffer.max": "2g",  # Increased buffer size
             "spark.rdd.compress": "true",
-            "spark.shuffle.compress": "true",
-            "spark.shuffle.spill.compress": "true",
             
             # Driver configuration
             "spark.driver.extraJavaOptions": self.extra_java_options,
             "spark.driver.extraLibraryPath": "/opt/homebrew/opt/libomp/lib",
+            "spark.driver.maxResultSize": "4g",  # Increased result size limit
             
             # Basic settings
             "spark.master": self.master,
             "spark.app.name": self.app_name,
             "spark.local.dir": self.local_dir,
-            "spark.sql.warehouse.dir": self.warehouse_dir
+            "spark.sql.warehouse.dir": self.warehouse_dir,
+            
+            # RPC settings
+            "spark.rpc.message.maxSize": "1024",
+            "spark.rpc.askTimeout": "600s",
+            "spark.rpc.lookupTimeout": "120s",
+            
+            # Speculation settings
+            "spark.speculation": "true",
+            "spark.speculation.interval": "1000ms",
+            "spark.speculation.multiplier": "2",
+            "spark.speculation.quantile": "0.75"
         })
     
     master: str = Field(default="local[*]")  # Will be set dynamically in __init__
@@ -108,7 +127,9 @@ class M1SparkSettings(BaseModel):
     extra_java_options: str = Field(
         default="-Xss4M -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions "
         "-XX:G1NewSizePercent=40 -XX:G1MaxNewSizePercent=60 "
-        "-XX:G1HeapRegionSize=32M -XX:G1ReservePercent=15"
+        "-XX:G1HeapRegionSize=32M -XX:G1ReservePercent=15 "
+        "-XX:+UseCompressedOops -XX:+UseCompressedClassPointers "
+        "-XX:+OptimizeStringConcat -XX:+UseStringDeduplication"
     )
     
     def as_dict(self) -> Dict[str, Any]:
