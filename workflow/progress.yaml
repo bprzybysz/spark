@@ -227,6 +227,77 @@ stages:
         target: ">60%"
         current: "40%"
 
+  stage6-review-implementation:
+    status: not_started
+    description: "Implement fixes and improvements based on code review (Optimized Order)"
+    start_date: null
+    completion: 0
+    tests_status: "not_started"
+    tasks:
+      - task: "1. Foundational DI Wiring (High Priority)"
+        status: todo
+        details: "Wire up core DI providers required by multiple components."
+        subtasks:
+          - "Implement SparkSession provider using SparkSessionFactory"
+          - "Implement basic ModelRegistry provider (Singleton) & implement ModelRegistry._load_models"
+          - "Implement basic FastAPI App provider (Singleton)"
+          - "Implement basic DataLineageTracker provider (Singleton)"
+          - "Implement Hive client provider (if basic Hive interaction needed early)" # Optional: Defer if only used by later features
+          - "Write unit tests for provider implementations"
+          - "Write integration tests for container setup & basic service resolution"
+      - task: "2. Implement Pipeline Orchestration & Config Loading (Medium Priority)"
+        status: todo
+        details: "Create the mechanism to run stages sequentially and load their configs."
+        subtasks:
+          - "Create main pipeline runner script/class"
+          - "Implement stage-specific config loading within runner (using get_stage_config)"
+          - "Implement stage instantiation and sequential execution (calling stage.execute)"
+          - "Implement basic StageResult handling (logging errors/status)"
+          - "Write unit tests for runner logic and config loading"
+          - "Write integration tests verifying stage execution sequence"
+      - task: "3. Integrate Model Registry (Medium Priority)"
+        status: todo
+        details: "Fully integrate the Model Registry with training and serving."
+        subtasks:
+          - "Create SparkMLModel wrapper (similar to TensorFlowModel)"
+          - "Modify Stage 5 Trainer to use ModelRegistry for saving models (incl. metadata)"
+          - "Modify API endpoints (/models, /predict) to use the *working* ModelRegistry provider"
+          - "Write unit tests for SparkMLModel wrapper"
+          - "Write integration tests for saving models via Stage 5"
+          - "Write integration tests for API endpoints interacting with the registry"
+      - task: "4. Implement Spark Streaming (High Priority)"
+        status: todo
+        details: "Build the Spark Structured Streaming components."
+        subtasks:
+          - "Define streaming logic/application (e.g., in src/streaming)"
+          - "Implement Kafka client logic (producer/consumer wrappers)"
+          - "Implement concrete Kafka DI providers using KafkaSettings"
+          - "Define streaming workflow/deployment strategy"
+          - "Write unit tests for Kafka clients"
+          - "Write integration tests for the streaming application logic"
+      - task: "5. Implement ML Preprocessor Handling (Medium Priority)"
+        status: todo
+        details: "Standardize saving, loading, and application of ML preprocessors."
+        subtasks:
+          - "Finalize preprocessing strategy (SparkML Transformers recommended for consistency)"
+          - "Implement saving/loading of preprocessor pipelines within Model wrappers (TFModel, SparkMLModel)"
+          - "Implement application of preprocessors within Model.predict methods"
+          - "Ensure preprocessor info is stored in ModelMetadata"
+          - "Write unit tests for preprocessor saving/loading logic"
+          - "Write integration tests ensuring predictions with preprocessing work correctly"
+      - task: "6. Integrate Data Lineage Tracking (Medium Priority)"
+        status: todo
+        details: "Embed lineage tracking calls within pipeline stages."
+        subtasks:
+          - "Ensure DataLineageTracker provider is working (from Task 1)"
+          - "Modify Stage 1, 2, 3, 5 execute methods to call tracker.add_source/add_transformation etc."
+          - "Write unit tests verifying tracker methods are called"
+          - "Write integration test checking the lineage graph output after a pipeline run"
+    next_steps:
+      - "Begin implementation with Task 1 (Foundational DI Wiring)"
+      - "Develop tests alongside features for each task"
+      - "Address minor issues from review report opportunistically during development"
+
 components:
   data_pipeline:
     status: in_progress
